@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/ke_app_app_bar.dart';
 import '../../core/widgets/neon_widgets.dart';
 import '../../domain/entities/status_item.dart';
+import '../../features/status_labels/presentation/status_contact_label.dart';
 import '../common/buttons/keep_button.dart';
 import '../common/controls/filter_control.dart';
 import '../common/feedback/empty_state.dart';
@@ -229,6 +230,8 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen> {
             Expanded(
               child: StatusGrid(
                 items: filteredItems,
+                contactLabelBuilder: (item) =>
+                    StatusContactLabel(statusId: item.id),
                 onEmptyAction: () {
                   if (_activeFilter != MediaFilter.all && allItems.isNotEmpty) {
                     setState(() => _activeFilter = MediaFilter.all);

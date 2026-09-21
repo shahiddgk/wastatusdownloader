@@ -1,6 +1,6 @@
-package offline.wastatus.downloader
+package ratedwhats.appstatusdownloader
 
-import offline.wastatus.downloader.status.StatusFileCatalog
+import ratedwhats.appstatusdownloader.status.StatusFileCatalog
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test

@@ -34,6 +34,7 @@ class StatusCard extends StatefulWidget {
   final bool isSelected;
   final String? thumbnailPath;
   final Future<String?> Function(StatusItem)? thumbnailLoader;
+  final Widget? contactLabel;
 
   const StatusCard({
     super.key,
@@ -45,6 +46,7 @@ class StatusCard extends StatefulWidget {
     this.isSelected = false,
     this.thumbnailPath,
     this.thumbnailLoader,
+    this.contactLabel,
   });
 
   @override
@@ -182,26 +184,6 @@ class _StatusCardState extends State<StatusCard> {
                         child: _buildMediaContent(),
                       ),
 
-                      // 2. Bottom linear scrim for typography contrast
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        height: 72,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                const Color(0xB3000000), // rgba(0, 0, 0, 0.70)
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-
                       // 3. Top-Left Kept Badge
                       if (isKept)
                         Positioned(
@@ -242,25 +224,56 @@ class _StatusCardState extends State<StatusCard> {
                           child: VideoBadge(durationMs: 0),
                         ),
 
-                      // 5. Bottom-Left Freshness Label (bounded before KeepButton)
+                      // The scrim grows with the label and text size.
                       Positioned(
-                        bottom: AppSpacing.space12,
-                        left: AppSpacing.space8,
-                        right: AppSpacing.space48 + AppSpacing.space4,
-                        child: FreshnessLabel(
-                          timestamp: widget.item.lastModified,
-                        ),
-                      ),
-
-                      // 6. Bottom-Right Signature KeepButton
-                      Positioned(
-                        bottom: AppSpacing.space2,
-                        right: AppSpacing.space2,
-                        child: KeepButton(
-                          state: widget.keepState,
-                          onPressed: widget.onKeep,
-                          onAlreadyKeptPressed: widget.onAlreadyKept,
-                          variant: KeepButtonVariant.cardOverlay,
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.space8,
+                            AppSpacing.space24,
+                            AppSpacing.space2,
+                            AppSpacing.space2,
+                          ),
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Color(0xE6000000)],
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    bottom: AppSpacing.space8,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (widget.contactLabel != null)
+                                        widget.contactLabel!,
+                                      FreshnessLabel(
+                                        timestamp: widget.item.lastModified,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.space4),
+                              KeepButton(
+                                state: widget.keepState,
+                                onPressed: widget.onKeep,
+                                onAlreadyKeptPressed: widget.onAlreadyKept,
+                                variant: KeepButtonVariant.cardOverlay,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],

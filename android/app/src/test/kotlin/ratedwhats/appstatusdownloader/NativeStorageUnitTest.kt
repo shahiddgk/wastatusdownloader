@@ -1,8 +1,9 @@
-package offline.wastatus.downloader
+package ratedwhats.appstatusdownloader
 
-import offline.wastatus.downloader.status.StatusDocumentReader
-import offline.wastatus.downloader.status.ThumbnailManager
-import offline.wastatus.downloader.status.VideoCacheManager
+import ratedwhats.appstatusdownloader.status.StatusDocumentReader
+import ratedwhats.appstatusdownloader.status.StatusFileCatalog
+import ratedwhats.appstatusdownloader.status.ThumbnailManager
+import ratedwhats.appstatusdownloader.status.VideoCacheManager
 import org.junit.Assert.*
 import org.junit.Test
 import java.io.File
@@ -11,8 +12,11 @@ class NativeStorageUnitTest {
 
     @Test
     fun testApplicationIdentityPackage() {
-        val expectedPackage = "offline.wastatus.downloader"
-        assertEquals("Canonical package namespace must be offline.wastatus.downloader", "offline.wastatus.downloader", expectedPackage)
+        assertEquals(
+            "Native status classes must use the application namespace",
+            "ratedwhats.appstatusdownloader.status",
+            StatusFileCatalog::class.java.`package`?.name
+        )
     }
 
     @Test

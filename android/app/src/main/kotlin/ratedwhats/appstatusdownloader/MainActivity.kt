@@ -1,7 +1,7 @@
-package offline.wastatus.downloader
+package ratedwhats.appstatusdownloader
 
 import android.content.Intent
-import offline.wastatus.downloader.status.AndroidStatusScanner
+import ratedwhats.appstatusdownloader.status.AndroidStatusScanner
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 

@@ -1,4 +1,4 @@
-package offline.wastatus.downloader.status
+package ratedwhats.appstatusdownloader.status
 
 import android.content.Context
 import android.content.Intent

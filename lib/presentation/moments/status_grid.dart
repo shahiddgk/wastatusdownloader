@@ -28,6 +28,7 @@ class StatusGrid extends StatelessWidget {
   final ValueChanged<StatusItem>? onAlreadyKeptStatus;
   final KeepState Function(StatusItem)? keepStateResolver;
   final Future<String?> Function(StatusItem)? thumbnailLoader;
+  final Widget Function(StatusItem)? contactLabelBuilder;
   final bool isLoading;
   final EmptyScenario emptyScenario;
   final VoidCallback? onEmptyAction;
@@ -45,6 +46,7 @@ class StatusGrid extends StatelessWidget {
     this.onAlreadyKeptStatus,
     this.keepStateResolver,
     this.thumbnailLoader,
+    this.contactLabelBuilder,
     this.isLoading = false,
     this.emptyScenario = EmptyScenario.noStatuses,
     this.onEmptyAction,
@@ -132,6 +134,7 @@ class StatusGrid extends StatelessWidget {
                   keepStateResolver?.call(item) ??
                   (item.isSaved ? KeepState.alreadyKept : KeepState.idle),
               thumbnailLoader: thumbnailLoader,
+              contactLabel: contactLabelBuilder?.call(item),
             );
 
             return _StaggeredGridCard(

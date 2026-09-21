@@ -170,11 +170,11 @@ jobs:
         run: |
           echo "Validating application ID and namespace declarations..."
           GRADLE_FILE="android/app/build.gradle.kts"
-          grep -E 'namespace = "offline\.wastatus\.downloader"' "$GRADLE_FILE" || {
+          grep -E 'namespace = "ratedwhats\.appstatusdownloader"' "$GRADLE_FILE" || {
             echo "::error::Namespace mismatch in $GRADLE_FILE"
             exit 1
           }
-          grep -E 'applicationId = "offline\.wastatus\.downloader"' "$GRADLE_FILE" || {
+          grep -E 'applicationId = "ratedwhats\.appstatusdownloader"' "$GRADLE_FILE" || {
             echo "::error::applicationId mismatch in $GRADLE_FILE"
             exit 1
           }
@@ -190,7 +190,7 @@ jobs:
             echo "::error::Legacy package directory exists in test source set"
             exit 1
           fi
-          echo "✓ Application ID and namespace verified: offline.wastatus.downloader"
+          echo "✓ Application ID and namespace verified: ratedwhats.appstatusdownloader"
 
       - name: License Verification Check
         run: |

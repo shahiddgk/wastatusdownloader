@@ -1,4 +1,4 @@
-package offline.wastatus.downloader.status
+package ratedwhats.appstatusdownloader.status
 
 import java.io.File
 import java.io.IOException

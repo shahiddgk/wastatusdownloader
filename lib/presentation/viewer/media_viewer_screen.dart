@@ -14,6 +14,7 @@ import '../../application/providers.dart';
 import '../../application/saver/save_state.dart';
 import '../../application/viewer/viewer_state.dart';
 import '../../domain/entities/status_item.dart';
+import '../../features/status_labels/presentation/status_contact_label.dart';
 import '../../core/constants/app_constants.dart';
 import '../common/buttons/keep_button.dart';
 import '../common/feedback/error_state.dart';
@@ -384,7 +385,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen>
                 ? Duration.zero
                 : const Duration(milliseconds: 240),
             curve: AppMotion.emphasizedDecelerate,
-            top: _showChrome ? 0 : -90,
+            top: _showChrome ? 0 : -MediaQuery.sizeOf(context).height,
             left: 0,
             right: 0,
             child: Container(
@@ -422,11 +423,20 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen>
                   ),
                   const SizedBox(width: AppSpacing.space8),
                   Expanded(
-                    child: Text(
-                      FreshnessLabel.formatFreshness(widget.item.lastModified),
-                      style: AppTypography.titleMedium.copyWith(
-                        color: AppColors.darkTextPrimary,
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        StatusContactLabel(statusId: widget.item.id),
+                        Text(
+                          FreshnessLabel.formatFreshness(
+                            widget.item.lastModified,
+                          ),
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.darkTextPrimary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   IconButton(
