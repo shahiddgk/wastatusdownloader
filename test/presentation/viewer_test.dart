@@ -191,7 +191,7 @@ void main() {
 
       expect(find.text('Media Information'), findsOneWidget);
       expect(find.text('my_moment.jpg'), findsOneWidget);
-      expect(find.text('Photo (JPEG)'), findsOneWidget);
+      expect(find.text('image/jpeg'), findsOneWidget);
       expect(find.text('2.00 MB'), findsOneWidget);
     });
 

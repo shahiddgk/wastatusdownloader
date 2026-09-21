@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/constants/app_constants.dart';
+import '../data/repositories/saved_status_repository.dart';
+import '../domain/entities/status_item.dart';
 import '../data/datasources/status_platform_datasource.dart';
 import '../data/repositories/status_repository_impl.dart';
 import '../domain/repositories/status_repository.dart';
@@ -155,3 +157,10 @@ final selectedTargetPackageProvider =
       SelectedTargetPackageNotifier.new,
     );
 
+final savedStatusRepositoryProvider = Provider<SavedStatusRepository>((ref) {
+  return SavedStatusRepository(ref.watch(statusScannerPlatformProvider));
+});
+
+final savedStatusesProvider = FutureProvider<List<StatusItem>>((ref) {
+  return ref.watch(savedStatusRepositoryProvider).getSavedStatuses();
+});

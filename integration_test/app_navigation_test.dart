@@ -73,6 +73,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            savedStatusesProvider.overrideWith(
+              (ref) async => items.where((i) => i.isSaved).toList(),
+            ),
             accessNotifierProvider.overrideWith(
               () => TestAccessNotifier(const AccessGranted()),
             ),
@@ -87,9 +90,9 @@ void main() {
 
       // 1. App Launches on Moments tab
       expect(find.byType(MomentsScreen), findsOneWidget);
-      expect(find.text('Keeva'), findsOneWidget);
-      expect(find.text('2 status available'), findsOneWidget);
-      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('WhatsApp'), findsOneWidget);
+      expect(find.text('All (2)'), findsOneWidget);
+      expect(find.text('Today'), findsNothing);
 
       // 2. Filter tabs test
       final photosFilter = find.textContaining('Photos');
@@ -112,7 +115,7 @@ void main() {
       await tester.tap(keptTab);
       await tester.pumpAndSettle();
 
-      expect(find.text('Saved Vault'), findsOneWidget);
+      expect(find.text('Saved'), findsWidgets);
 
       // 4. Navigation to Settings
       final settingsTab = find.text('Settings');
@@ -120,28 +123,9 @@ void main() {
       await tester.tap(settingsTab);
       await tester.pumpAndSettle();
 
-      expect(find.text('Private & Local-First'), findsOneWidget);
-
-      // 5. Open Privacy Sheet from Settings
-      await tester.tap(find.text('Private & Local-First'));
+      expect(find.text('Status access'), findsOneWidget);
+      await tester.tap(find.text('Dark theme'));
       await tester.pumpAndSettle();
-
-      expect(
-        find.text(
-          'Keeva operates 100% locally on your device. It requires zero internet permissions, connects strictly to your selected WhatsApp folder via Android Storage Access Framework, and never uploads or logs your media.',
-        ),
-        findsOneWidget,
-      );
-
-      // Dismiss Privacy Sheet by tapping outside modal
-      await tester.tapAt(const Offset(20, 50));
-      await tester.pumpAndSettle();
-      expect(
-        find.text(
-          'Keeva operates 100% locally on your device. It requires zero internet permissions, connects strictly to your selected WhatsApp folder via Android Storage Access Framework, and never uploads or logs your media.',
-        ),
-        findsNothing,
-      );
 
       // 6. Rapid Navigation Stress Test: Switch between tabs repeatedly
       for (int i = 0; i < 4; i++) {

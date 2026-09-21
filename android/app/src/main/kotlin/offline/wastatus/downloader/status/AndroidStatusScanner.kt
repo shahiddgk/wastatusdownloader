@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 
 /**
  * Native facade and MethodChannel coordinator for the WhatsApp Status Saver.
- * Coordinates SAF permissions, document queries, media saving, and thumbnail/video caches.
+ * Coordinates file permissions, media discovery, saving, and thumbnail/video caches.
  * All heavy storage and ContentResolver operations are dispatched to Dispatchers.IO.
  */
 class AndroidStatusScanner(
@@ -31,8 +31,6 @@ class AndroidStatusScanner(
 
     companion object {
         const val CHANNEL_NAME = "com.example.whatsapp_status_saver/scanner"
-        const val REQUEST_CODE_SAF_TREE = 4201
-        const val REQUEST_CODE_DOWNLOAD_FOLDER = 4202
         private const val TAG = "AndroidStatusScanner"
     }
 
@@ -53,9 +51,9 @@ class AndroidStatusScanner(
     }
 
     private var channel: MethodChannel? = null
-    private var pendingSafResult: MethodChannel.Result? = null
+    private val directStorageAccess = DirectStorageAccess(activity)
+    private var pendingAccessResult: MethodChannel.Result? = null
     private var pendingTargetPackage: String? = null
-    private var pendingDownloadFolderResult: MethodChannel.Result? = null
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     fun registerWith(messenger: BinaryMessenger) {
@@ -74,7 +72,7 @@ class AndroidStatusScanner(
         when (call.method) {
             "checkFolderAccess" -> handleCheckFolderAccess(call, result)
             "requestFolderAccess" -> handleRequestFolderAccess(call, result)
-            "scanStatuses", "getStatuses" -> handleScanStatuses(call, result)
+            "scanStatuses", "getStatuses", "getSavedStatuses" -> handleScanStatuses(call, result)
             "getThumbnail" -> handleGetThumbnail(call, result)
             "prepareVideo" -> handlePrepareVideo(call, result)
             "saveStatus" -> handleSaveStatus(call, result)
@@ -82,8 +80,6 @@ class AndroidStatusScanner(
             "clearCaches", "clearCache" -> handleClearCaches(result)
             "getCacheStats" -> handleGetCacheStats(result)
             "revokeAccess" -> handleRevokeAccess(call, result)
-            "requestDownloadFolder" -> handleRequestDownloadFolder(result)
-            "getDownloadFolder" -> handleGetDownloadFolder(result)
             // Backward-compatibility handlers for transitional POC
             "verifyMediaRead" -> handleVerifyMediaRead(call, result)
             "saveTestImage" -> handleSaveTestImage(call, result)
@@ -91,46 +87,14 @@ class AndroidStatusScanner(
         }
     }
 
-    private fun handleRequestDownloadFolder(result: MethodChannel.Result) {
-        if (pendingDownloadFolderResult != null) {
-            result.error("ALREADY_PENDING", "Another folder request is active", null)
-            return
-        }
-        pendingDownloadFolderResult = result
-        try {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
-                addFlags(
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
-                        Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
-                        Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
-                )
-            }
-            activity.startActivityForResult(intent, REQUEST_CODE_DOWNLOAD_FOLDER)
-        } catch (e: Exception) {
-            pendingDownloadFolderResult = null
-            result.error("LAUNCH_FAILED", e.message, null)
-        }
-    }
-
-    private fun handleGetDownloadFolder(result: MethodChannel.Result) {
-        val prefs = activity.getSharedPreferences("keeva_storage_prefs", Context.MODE_PRIVATE)
-        result.success(
-            mapOf(
-                "uri" to prefs.getString("download_folder_uri", null),
-                "displayName" to prefs.getString("download_folder_name", null)
-            )
-        )
-    }
-
     private fun handleCheckFolderAccess(call: MethodCall, result: MethodChannel.Result) {
         val targetPackage = call.argument<String>("targetPackage") ?: SafStorageManager.WHATSAPP_STANDARD
         scope.launch {
             try {
                 val accessResult = withContext(Dispatchers.IO) {
-                    safStorageManager.checkAccess(targetPackage)
+                    directStorageAccess.result(targetPackage)
                 }
-                result.success(accessResult.toMap())
+                result.success(accessResult)
             } catch (e: Exception) {
                 Log.e(TAG, "checkFolderAccess failed", e)
                 result.error(ErrorCodes.UNKNOWN, e.message, null)
@@ -139,188 +103,67 @@ class AndroidStatusScanner(
     }
 
     private fun handleRequestFolderAccess(call: MethodCall, result: MethodChannel.Result) {
-        if (pendingSafResult != null) {
-            result.error("ALREADY_PENDING", "Another SAF request is active", null)
+        if (pendingAccessResult != null) {
+            result.error("ALREADY_PENDING", "Another access request is active", null)
             return
         }
         val targetPackage = call.argument<String>("targetPackage") ?: SafStorageManager.WHATSAPP_STANDARD
-        pendingSafResult = result
+        pendingAccessResult = result
         pendingTargetPackage = targetPackage
 
         try {
-            val intent = safStorageManager.createOpenDocumentTreeIntent(targetPackage)
-            activity.startActivityForResult(intent, REQUEST_CODE_SAF_TREE)
+            if (directStorageAccess.hasAccess()) {
+                completeAccessRequest()
+            } else {
+                directStorageAccess.request()
+            }
         } catch (e: Exception) {
-            pendingSafResult = null
+            pendingAccessResult = null
             pendingTargetPackage = null
-            Log.e(TAG, "Failed to launch ACTION_OPEN_DOCUMENT_TREE", e)
-            result.error("LAUNCH_FAILED", e.message, null)
+            Log.e(TAG, "Could not open storage permission settings")
+            result.error("LAUNCH_FAILED", "Could not open permission settings. Please try again.", null)
         }
     }
 
-    /**
-     * Handles activity result from ACTION_OPEN_DOCUMENT_TREE.
-     */
-    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_CODE_DOWNLOAD_FOLDER) {
-            val channelResult = pendingDownloadFolderResult ?: return
-            pendingDownloadFolderResult = null
-            if (resultCode == Activity.RESULT_OK && data?.data != null) {
-                val uri = data.data!!
-                try {
-                    activity.contentResolver.takePersistableUriPermission(
-                        uri,
-                        data.flags and (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                    )
-                } catch (e: Exception) {
-                    Log.w(TAG, "Unable to persist download folder permission", e)
-                }
-                val name = uri.path?.substringAfterLast(':')?.substringAfterLast('/')
-                    ?.ifBlank { "Selected folder" } ?: "Selected folder"
-                activity.getSharedPreferences("keeva_storage_prefs", Context.MODE_PRIVATE)
-                    .edit()
-                    .putString("download_folder_uri", uri.toString())
-                    .putString("download_folder_name", name)
-                    .apply()
-                channelResult.success(mapOf("uri" to uri.toString(), "displayName" to name))
-            } else {
-                channelResult.success(mapOf("uri" to null, "displayName" to null))
-            }
-            return
-        }
-        if (requestCode != REQUEST_CODE_SAF_TREE) return
-
-        val channelResult = pendingSafResult ?: return
-        val targetPkg = pendingTargetPackage ?: SafStorageManager.WHATSAPP_STANDARD
-        pendingSafResult = null
+    private fun completeAccessRequest() {
+        val result = pendingAccessResult ?: return
+        val targetPackage = pendingTargetPackage ?: SafStorageManager.WHATSAPP_STANDARD
+        pendingAccessResult = null
         pendingTargetPackage = null
+        result.success(directStorageAccess.result(targetPackage))
+    }
 
-        if (resultCode == Activity.RESULT_OK && data != null && data.data != null) {
-            val treeUri = data.data!!
-            val rawFlags = data.flags
+    fun onRequestPermissionsResult(requestCode: Int) {
+        if (requestCode == DirectStorageAccess.REQUEST_CODE) completeAccessRequest()
+    }
 
-            Log.i(TAG, "========== STATUS FOLDER SELECTED ==========")
-            Log.i(
-                TAG,
-                "Type: ${if (targetPkg == SafStorageManager.WHATSAPP_BUSINESS) "WhatsApp Business" else "WhatsApp"}"
-            )
-            Log.i(TAG, "URI: $treeUri")
-            Log.i(TAG, "=============================================")
-
-            scope.launch {
-                try {
-                    val (persisted, validation) = withContext(Dispatchers.IO) {
-                        val tookPerm = safStorageManager.takePersistablePermission(treeUri, targetPkg)
-                        val validResult = safStorageManager.validateTreeUri(treeUri, targetPkg)
-                        Pair(tookPerm, validResult)
-                    }
-
-                    val granted = validation.status == ValidationStatus.VALID ||
-                            validation.status == ValidationStatus.VALID_PARENT
-
-                    channelResult.success(
-                        mapOf(
-                            "granted" to granted,
-                            "treeUri" to treeUri.toString(),
-                            "flags" to rawFlags,
-                            "persisted" to persisted,
-                            "status" to validation.status.name.lowercase(),
-                            "resolvedStatusesDocId" to validation.resolvedStatusesDocId,
-                            "error" to validation.errorMessage
-                        )
-                    )
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error processing SAF result", e)
-                    channelResult.success(
-                        mapOf(
-                            "granted" to false,
-                            "treeUri" to treeUri.toString(),
-                            "persisted" to false,
-                            "error" to (e.message ?: "Failed to validate selected folder")
-                        )
-                    )
-                }
-            }
-        } else {
-            channelResult.success(
-                mapOf(
-                    "granted" to false,
-                    "error" to "User cancelled or no folder selected"
-                )
-            )
-        }
+    fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == DirectStorageAccess.REQUEST_CODE) completeAccessRequest()
     }
 
     private fun handleScanStatuses(call: MethodCall, result: MethodChannel.Result) {
-        val treeUriParam = call.argument<String>("treeUri")
         val targetPackage = call.argument<String>("targetPackage") ?: SafStorageManager.WHATSAPP_STANDARD
-
-        Log.d(TAG, "=== handleScanStatuses ===")
-        Log.d(TAG, "  targetPackage: $targetPackage")
-        Log.d(TAG, "  treeUriParam from Dart: $treeUriParam")
-
         scope.launch {
             try {
                 val items = withContext(Dispatchers.IO) {
-                    val treeUri = if (!treeUriParam.isNullOrEmpty()) {
-                        Log.d(TAG, "  Using treeUri provided by Dart: $treeUriParam")
-                        Uri.parse(treeUriParam)
+                    if (!directStorageAccess.hasAccess()) {
+                        throw SecurityException("Allow file access to see statuses.")
+                    }
+                    val roots = directStorageAccess.storageRoots()
+                    if (call.method == "getSavedStatuses") {
+                        statusDocumentReader.scanSavedFiles(roots)
                     } else {
-                        val resolved = safStorageManager.getPersistedReadTreeUri(targetPackage)
-                        Log.d(TAG, "  Resolved persisted treeUri for $targetPackage: $resolved")
-                        resolved
-                    } ?: run {
-                        Log.e(TAG, "  ERROR: No valid tree URI available for $targetPackage")
-                        throw IllegalStateException("No valid tree URI available for $targetPackage")
+                        statusDocumentReader.scanFiles(roots, targetPackage)
                     }
-
-                    Log.i(TAG, "========== STATUS SCAN ==========")
-                    Log.i(
-                        TAG,
-                        "Type: ${if (targetPackage == SafStorageManager.WHATSAPP_BUSINESS) "WhatsApp Business" else "WhatsApp"}"
-                    )
-                    Log.i(TAG, "Source URI: $treeUri")
-                    Log.i(TAG, "=================================")
-                    Log.d(TAG, "  Final treeUri being validated: $treeUri")
-
-                    // Validate and resolve .Statuses docId
-                    val validation = safStorageManager.validateTreeUri(treeUri, targetPackage)
-                    Log.d(TAG, "  Validation status: ${validation.status}  resolvedStatusesDocId: ${validation.resolvedStatusesDocId}")
-                    
-                    if (validation.status == ValidationStatus.PERMISSION_REVOKED) {
-                        throw SecurityException("Persisted URI permission revoked")
-                    }
-
-                    val statusesDocId = validation.resolvedStatusesDocId
-                        ?: run {
-                            Log.e(TAG, "  ERROR: Could not resolve .Statuses directory. Reason: ${validation.errorMessage}")
-                            throw IllegalStateException("Could not resolve .Statuses directory: ${validation.errorMessage}")
-                        }
-
-                    Log.i(TAG, "Selected root: $treeUri")
-                    Log.i(TAG, "Resolved .Statuses: $statusesDocId")
-                    Log.i(TAG, "Exists: true")
-                    Log.i(TAG, "Readable: true")
-                    Log.d(TAG, "  Scanning .Statuses at docId: $statusesDocId  within treeUri: $treeUri")
-                    val scanned = statusDocumentReader.scanStatuses(treeUri, statusesDocId)
-                    Log.i(TAG, "Files found: ${scanned.size}")
-                    Log.d(TAG, "  Scan complete. Files found: ${scanned.size}")
-                    scanned.forEachIndexed { i, doc ->
-                        Log.d(TAG, "    [$i] ${doc.displayName}  lastModified=${doc.lastModified}  size=${doc.sizeBytes}")
-                    }
-                    scanned
                 }
-
                 result.success(items.map { it.toMap() })
             } catch (e: SecurityException) {
-                Log.e(TAG, "scanStatuses SecurityException", e)
-                result.error(ErrorCodes.ACCESS_REVOKED, e.message, null)
-            } catch (e: IllegalStateException) {
-                Log.e(TAG, "scanStatuses IllegalStateException", e)
-                result.error(ErrorCodes.STATUSES_UNAVAILABLE, e.message, null)
+                result.error(ErrorCodes.ACCESS_REVOKED, "Allow file access to see statuses.", null)
+            } catch (e: IllegalArgumentException) {
+                result.error("INVALID_ARG", "Unsupported status source.", null)
             } catch (e: Exception) {
-                Log.e(TAG, "scanStatuses failed", e)
-                result.error(ErrorCodes.READ_FAILED, e.message, null)
+                Log.e(TAG, "Status discovery failed")
+                result.error(ErrorCodes.READ_FAILED, "Could not load statuses. Please try again.", null)
             }
         }
     }

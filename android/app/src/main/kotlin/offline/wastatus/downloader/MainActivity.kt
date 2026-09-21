@@ -32,4 +32,13 @@ class MainActivity : FlutterActivity() {
         }
         super.onDestroy()
     }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (::statusScanner.isInitialized) {
+            statusScanner.onRequestPermissionsResult(requestCode)
+        }
+    }
 }

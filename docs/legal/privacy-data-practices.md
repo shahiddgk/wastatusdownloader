@@ -1,3 +1,5 @@
+> Historical SAF design. The current direct-install APK uses the permission-only flow described in [decision 007](../decisions/007-permission-only-status-access.md). It requests broad Android file access and scans known status and saved-media directories. Previous scoped-permission claims below describe the earlier build.
+
 # Keeva Privacy & Data Practices Audit
 
 **Product:** Keeva

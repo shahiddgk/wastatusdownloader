@@ -79,10 +79,7 @@ class StatusListNotifier extends Notifier<StatusListState> {
   /// Refreshes the status list in the background while preserving current items.
   ///
   /// Concurrency guard: Ignores reentrant calls while loading or refreshing.
-  Future<void> refresh({
-    String targetPackage = AppConstants.whatsappStandardPackage,
-    String? treeUri,
-  }) async {
+  Future<void> refresh({String targetPackage = '', String? treeUri}) async {
     if (state.isLoading || state.isRefreshing) {
       return;
     }

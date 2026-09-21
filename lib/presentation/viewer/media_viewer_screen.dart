@@ -189,16 +189,9 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen>
               ),
               const SizedBox(height: AppSpacing.space16),
               _buildInfoRow('File Name', widget.item.displayName),
-              _buildInfoRow(
-                'Media Type',
-                widget.item.isVideo ? 'Video (MP4)' : 'Photo (JPEG)',
-              ),
+              _buildInfoRow('Media Type', widget.item.mimeType),
               _buildInfoRow('File Size', '$fileSizeMb MB'),
               _buildInfoRow('Date Modified', dateStr),
-              _buildInfoRow(
-                'Storage Access',
-                'Android SAF Document ID (Protected)',
-              ),
               const SizedBox(height: AppSpacing.space16),
             ],
           ),

@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
 import android.os.Build
-import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Log
 import java.io.IOException
@@ -42,7 +41,7 @@ class MediaStoreSaver(private val context: Context) {
     }
 
     /**
-     * Saves media from a source SAF Uri to MediaStore public collections.
+     * Saves media from a registered source Uri to MediaStore public collections.
      * Enforces atomic rollback: any failure deletes the target MediaStore row immediately.
      */
     fun saveMedia(
@@ -51,20 +50,6 @@ class MediaStoreSaver(private val context: Context) {
         mimeType: String,
         isVideo: Boolean
     ): SaveResult {
-        val selectedFolder = context.getSharedPreferences(
-            "keeva_storage_prefs",
-            Context.MODE_PRIVATE
-        ).getString("download_folder_uri", null)
-        if (!selectedFolder.isNullOrBlank()) {
-            return saveToSelectedFolder(
-                Uri.parse(selectedFolder),
-                sourceUri,
-                displayName,
-                mimeType,
-                isVideo
-            )
-        }
-
         val resolver = context.contentResolver
         val isVideoItem = isVideo || mimeType.startsWith("video/")
         val collectionUri = if (isVideoItem) {
@@ -82,6 +67,21 @@ class MediaStoreSaver(private val context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
+            } else {
+                @Suppress("DEPRECATION")
+                val root = android.os.Environment.getExternalStorageDirectory()
+                val directory = java.io.File(root, relativePath)
+                if (!directory.isDirectory && !directory.mkdirs()) {
+                    throw IOException("Could not create save folder")
+                }
+                var destination = java.io.File(directory, sanitizedDisplayName)
+                var copy = 1
+                while (destination.exists()) {
+                    destination = java.io.File(directory,
+                        "${java.io.File(sanitizedDisplayName).nameWithoutExtension}_${copy++}.${java.io.File(sanitizedDisplayName).extension}")
+                }
+                @Suppress("DEPRECATION")
+                put(MediaStore.MediaColumns.DATA, destination.absolutePath)
             }
         }
 
@@ -116,10 +116,12 @@ class MediaStoreSaver(private val context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 contentValues.clear()
                 contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
-                resolver.update(targetUri, contentValues, null, null)
+                if (resolver.update(targetUri, contentValues, null, null) != 1) {
+                    throw IOException("Could not finalize saved media")
+                }
             }
 
-            Log.d(TAG, "Saved $mediaTypeLabel successfully: $sanitizedDisplayName ($bytesCopied bytes) -> $targetUri")
+            Log.d(TAG, "Saved $mediaTypeLabel successfully")
 
             return SaveResult(
                 success = true,
@@ -149,57 +151,7 @@ class MediaStoreSaver(private val context: Context) {
                 displayName = sanitizedDisplayName,
                 bytesSaved = 0L,
                 publicCollection = relativePath,
-                error = e.message ?: e.toString()
-            )
-        }
-    }
-
-    private fun saveToSelectedFolder(
-        treeUri: Uri,
-        sourceUri: Uri,
-        displayName: String,
-        mimeType: String,
-        isVideo: Boolean
-    ): SaveResult {
-        val resolver = context.contentResolver
-        val mediaTypeLabel = if (isVideo || mimeType.startsWith("video/")) "video" else "image"
-        val sanitizedDisplayName = sanitizeFileName(displayName, isVideo)
-        var targetUri: Uri? = null
-        return try {
-            targetUri = DocumentsContract.createDocument(
-                resolver,
-                treeUri,
-                mimeType,
-                sanitizedDisplayName
-            ) ?: throw IOException("Unable to create file in selected folder")
-
-            val inputStream = resolver.openInputStream(sourceUri)
-            if (inputStream == null) {
-                throw IOException("Source stream unavailable for selected-folder save")
-            }
-            var bytesCopied = 0L
-            inputStream.use { input ->
-                val output = resolver.openOutputStream(targetUri)
-                    ?: throw IOException("Destination stream unavailable")
-                output.use { bytesCopied = input.copyTo(it) }
-            }
-            SaveResult(
-                success = true,
-                mediaType = mediaTypeLabel,
-                displayName = sanitizedDisplayName,
-                bytesSaved = bytesCopied,
-                publicCollection = "Selected folder",
-                insertedUri = targetUri.toString()
-            )
-        } catch (e: Exception) {
-            targetUri?.let { resolver.delete(it, null, null) }
-            SaveResult(
-                success = false,
-                mediaType = mediaTypeLabel,
-                displayName = sanitizedDisplayName,
-                bytesSaved = 0L,
-                publicCollection = "Selected folder",
-                error = e.message ?: e.toString()
+                error = "Could not save this status. Please try again."
             )
         }
     }
@@ -208,18 +160,7 @@ class MediaStoreSaver(private val context: Context) {
         val clean = originalName.trim().ifEmpty { "status_${System.currentTimeMillis()}" }
         val defaultExt = if (isVideo) ".mp4" else ".jpg"
 
-        return if (isVideo) {
-            if (clean.endsWith(".mp4", ignoreCase = true)) clean else "$clean$defaultExt"
-        } else {
-            if (clean.endsWith(".jpg", ignoreCase = true) ||
-                clean.endsWith(".jpeg", ignoreCase = true) ||
-                clean.endsWith(".png", ignoreCase = true) ||
-                clean.endsWith(".webp", ignoreCase = true)
-            ) {
-                clean
-            } else {
-                "$clean$defaultExt"
-            }
-        }
+        val fileName = java.io.File(clean).name.replace('\\', '_')
+        return if (StatusFileCatalog.mimeType(fileName) != null) fileName else "$fileName$defaultExt"
     }
 }

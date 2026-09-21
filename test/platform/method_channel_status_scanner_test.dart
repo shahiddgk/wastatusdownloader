@@ -49,6 +49,17 @@ void main() {
                   },
                 ];
 
+              case ChannelConstants.methodGetSavedStatuses:
+                return [
+                  {
+                    'id': 'file_saved',
+                    'displayName': 'saved.png',
+                    'mimeType': 'image/png',
+                    'sizeBytes': 20,
+                    'isSaved': true,
+                  },
+                ];
+
               case ChannelConstants.methodGetThumbnail:
                 return <String, dynamic>{
                   'filePath': '/data/user/0/com.example/cache/thumbnails/stat_test_01.jpg',
@@ -103,6 +114,17 @@ void main() {
   });
 
   group('MethodChannelStatusScanner', () {
+    test(
+      'loads saved copies independently without a selected folder',
+      () async {
+        final items = await scanner.getSavedStatuses();
+        expect(log.single.method, ChannelConstants.methodGetSavedStatuses);
+        expect(log.single.arguments, isNull);
+        expect(items.single.id, 'file_saved');
+        expect(items.single.isSaved, isTrue);
+      },
+    );
+
     test('checkFolderAccess invokes correct method and arguments', () async {
       final result = await scanner.checkFolderAccess(
         targetPackage: 'com.whatsapp.w4b',

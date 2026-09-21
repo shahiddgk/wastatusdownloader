@@ -101,13 +101,9 @@ class _KeevaAppState extends ConsumerState<KeevaApp>
     if (state == AppLifecycleState.resumed) {
       final activePkg = ref.read(selectedTargetPackageProvider);
       final accessState = ref.read(accessNotifierProvider);
-      if (accessState.isGranted) {
-        _startStatusRefreshTimer();
-        ref
-            .read(statusListNotifierProvider.notifier)
-            .refresh(targetPackage: activePkg);
-      } else {
-        _stopStatusRefreshTimer();
+      _stopStatusRefreshTimer();
+      ref.invalidate(savedStatusesProvider);
+      if (!accessState.isRequesting) {
         ref
             .read(accessNotifierProvider.notifier)
             .checkAccess(targetPackage: activePkg);
@@ -211,14 +207,7 @@ class _KeevaAppState extends ConsumerState<KeevaApp>
         body: activeScreen,
       );
     } else {
-      content = PermissionOnboardingScreen(
-        onAccessGranted: () {
-          final activePkg = ref.read(selectedTargetPackageProvider);
-          ref
-              .read(statusListNotifierProvider.notifier)
-              .load(targetPackage: activePkg);
-        },
-      );
+      content = const PermissionOnboardingScreen();
     }
 
     return MaterialApp(

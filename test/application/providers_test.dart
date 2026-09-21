@@ -24,6 +24,9 @@ import 'package:whatsapp_status_saver/platform/status_scanner_platform_interface
 
 class MockPlatformInterface implements StatusScannerPlatformInterface {
   @override
+  Future<List<StatusDto>> getSavedStatuses() async => [];
+
+  @override
   Future<PlatformAccessCheckResult> checkFolderAccess({
     String targetPackage = 'com.whatsapp',
   }) async => const PlatformAccessCheckResult(

@@ -11,6 +11,7 @@ import 'package:whatsapp_status_saver/presentation/onboarding/permission_onboard
 class MockAccessNotifier extends AccessNotifier {
   final AccessState initialState;
   bool requested = false;
+  String? requestedPackage;
 
   MockAccessNotifier([this.initialState = const AccessInitial()]);
 
@@ -20,6 +21,7 @@ class MockAccessNotifier extends AccessNotifier {
   @override
   Future<void> requestAccess({String targetPackage = ''}) async {
     requested = true;
+    requestedPackage = targetPackage;
   }
 
   void setState(AccessState newState) {
@@ -42,34 +44,29 @@ void main() {
   }
 
   group('Phase 2E-B4: PermissionOnboardingScreen', () {
-    testWidgets(
-      'renders guide, copy, and active Connect button in initial state',
-      (tester) async {
-        tester.view.devicePixelRatio = 1.0;
-        tester.view.physicalSize = const Size(800, 1200);
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
+    testWidgets('requests access with one button and no folder instructions', (
+      tester,
+    ) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(800, 1200);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
 
-        final mock = MockAccessNotifier(const AccessInitial());
+      final mock = MockAccessNotifier(const AccessInitial());
 
-        await tester.pumpWidget(buildTestable(mockNotifier: mock));
+      await tester.pumpWidget(buildTestable(mockNotifier: mock));
 
-        expect(find.text('WA Status Downloader'), findsOneWidget);
-        expect(find.text('Status Vault & Saver'), findsOneWidget);
-        expect(find.text('1. View statuses in WhatsApp'), findsOneWidget);
-        expect(find.text('2. Tap Connect Folder below'), findsOneWidget);
-        expect(find.text('3. Tap "Use this folder"'), findsOneWidget);
-        expect(find.text('Connect Media Folder'), findsOneWidget);
-        expect(find.text('Learn how Keeva protects you'), findsOneWidget);
+      expect(find.text('Allow access'), findsOneWidget);
+      expect(find.textContaining('automatically'), findsOneWidget);
+      expect(find.textContaining('Use this folder'), findsNothing);
 
-        // Tapping Connect triggers requestAccess()
-        await tester.tap(find.text('Connect Media Folder'));
-        await tester.pump();
-        expect(mock.requested, isTrue);
-      },
-    );
+      // Tapping Connect triggers requestAccess()
+      await tester.tap(find.text('Allow access'));
+      await tester.pump();
+      expect(mock.requested, isTrue);
+    });
 
     testWidgets('displays loading state on CTA during AccessRequesting', (
       tester,
@@ -107,10 +104,7 @@ void main() {
 
       await tester.pumpWidget(buildTestable(mockNotifier: mock));
 
-      expect(
-        find.text('Please select the WhatsApp media folder'),
-        findsOneWidget,
-      );
+      expect(find.text('Allow access to see your statuses.'), findsOneWidget);
     });
 
     testWidgets('displays error banner on AccessFailure state', (tester) async {
@@ -127,7 +121,10 @@ void main() {
 
       await tester.pumpWidget(buildTestable(mockNotifier: mock));
 
-      expect(find.text('SAF permission denied'), findsOneWidget);
+      expect(
+        find.text('Could not get access. Please try again.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('triggers onAccessGranted callback when access is granted', (
@@ -159,24 +156,22 @@ void main() {
       expect(grantedCalled, isTrue);
     });
 
-    testWidgets('tapping Learn how Keeva protects you opens privacy sheet', (
-      tester,
-    ) async {
-      tester.view.devicePixelRatio = 1.0;
-      tester.view.physicalSize = const Size(800, 1200);
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      final mock = MockAccessNotifier(const AccessInitial());
-
-      await tester.pumpWidget(buildTestable(mockNotifier: mock));
-
-      await tester.tap(find.text('Learn how Keeva protects you'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Private & Local-First'), findsOneWidget);
+    testWidgets('request uses the selected WhatsApp source', (tester) async {
+      final mock = MockAccessNotifier();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [accessNotifierProvider.overrideWith(() => mock)],
+          child: MaterialApp(home: PermissionOnboardingScreen()),
+        ),
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(PermissionOnboardingScreen)),
+      );
+      container
+          .read(selectedTargetPackageProvider.notifier)
+          .selectPackage('com.whatsapp.w4b');
+      await tester.tap(find.text('Allow access'));
+      expect(mock.requestedPackage, 'com.whatsapp.w4b');
     });
   });
 }

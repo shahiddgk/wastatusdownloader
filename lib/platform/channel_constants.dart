@@ -8,6 +8,7 @@ abstract final class ChannelConstants {
   static const String methodRequestFolderAccess = 'requestFolderAccess';
   static const String methodScanStatuses = 'scanStatuses';
   static const String methodGetStatuses = 'getStatuses';
+  static const String methodGetSavedStatuses = 'getSavedStatuses';
   static const String methodGetThumbnail = 'getThumbnail';
   static const String methodPrepareVideo = 'prepareVideo';
   static const String methodSaveStatus = 'saveStatus';
@@ -15,8 +16,6 @@ abstract final class ChannelConstants {
   static const String methodClearCaches = 'clearCaches';
   static const String methodGetCacheStats = 'getCacheStats';
   static const String methodRevokeAccess = 'revokeAccess';
-  static const String methodRequestDownloadFolder = 'requestDownloadFolder';
-  static const String methodGetDownloadFolder = 'getDownloadFolder';
 
   // --- Transitional POC Method Names (Do not use in production domain) ---
   static const String methodVerifyMediaRead = 'verifyMediaRead';

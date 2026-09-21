@@ -66,6 +66,17 @@ class MethodChannelStatusScanner implements StatusScannerPlatformInterface {
   }
 
   @override
+  Future<List<StatusDto>> getSavedStatuses() async {
+    final response = await _invoke<List<Object?>>(
+      ChannelConstants.methodGetSavedStatuses,
+    );
+    return response
+        .whereType<Map<Object?, Object?>>()
+        .map(StatusDto.fromMap)
+        .toList();
+  }
+
+  @override
   Future<String> getThumbnail({
     required String id,
     bool isVideo = false,
@@ -167,20 +178,6 @@ class MethodChannelStatusScanner implements StatusScannerPlatformInterface {
       {'targetPackage': targetPackage},
     );
     return response['revoked'] as bool? ?? false;
-  }
-
-  Future<String?> requestDownloadFolder() async {
-    final response = await _invoke<Map<Object?, Object?>>(
-      ChannelConstants.methodRequestDownloadFolder,
-    );
-    return response['displayName'] as String?;
-  }
-
-  Future<String?> getDownloadFolder() async {
-    final response = await _invoke<Map<Object?, Object?>>(
-      ChannelConstants.methodGetDownloadFolder,
-    );
-    return response['displayName'] as String?;
   }
 
   /// Internal invocation helper executing channel method and mapping [PlatformException].

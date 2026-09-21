@@ -82,6 +82,40 @@ class StatusDocumentReader(private val context: Context) {
     // In-memory registry for fast resolution of opaque ID -> StatusDocument
     private val documentCache = ConcurrentHashMap<String, StatusDocument>()
 
+    /** Registers only media discovered inside the selected WhatsApp source directories. */
+    fun scanFiles(roots: List<File>, targetPackage: String): List<StatusDocument> {
+        return registerFiles(StatusFileCatalog.scan(roots, targetPackage))
+    }
+
+    fun scanSavedFiles(roots: List<File>): List<StatusDocument> {
+        val directories = roots.flatMap { root -> listOf(
+            File(root, MediaStoreSaver.IMAGE_RELATIVE_PATH),
+            File(root, MediaStoreSaver.VIDEO_RELATIVE_PATH)
+        ) }
+        return registerFiles(StatusFileCatalog.mediaFiles(directories), saved = true)
+    }
+
+    private fun registerFiles(files: List<File>, saved: Boolean = false): List<StatusDocument> {
+        val savedPrefs = context.getSharedPreferences("keeva_saved_status", Context.MODE_PRIVATE)
+        return files.map { file ->
+            val mime = requireNotNull(StatusFileCatalog.mimeType(file.name))
+            val id = "file_" + ThumbnailManager.getSafeCacheKey(file.canonicalPath)
+            val document = StatusDocument(
+                id = id,
+                documentId = id,
+                displayName = file.name,
+                mimeType = mime,
+                sizeBytes = file.length(),
+                lastModified = file.lastModified(),
+                isVideo = mime.startsWith("video/"),
+                documentUri = Uri.fromFile(file),
+                isSaved = saved || savedPrefs.getBoolean(id, false) || savedPrefs.getBoolean(file.name, false)
+            )
+            documentCache[id] = document
+            document
+        }
+    }
+
     /**
      * Enumerates status files from the specified .Statuses document ID within the tree URI.
      */

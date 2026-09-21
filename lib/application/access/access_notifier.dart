@@ -16,6 +16,7 @@ import 'access_state.dart';
 class AccessNotifier extends Notifier<AccessState> {
   final CheckStorageAccessUseCase? _checkAccessOverride;
   final RequestStorageAccessUseCase? _requestAccessOverride;
+  int _requestId = 0;
   String _activePackage = AppConstants.whatsappStandardPackage;
 
   AccessNotifier({
@@ -41,29 +42,34 @@ class AccessNotifier extends Notifier<AccessState> {
   Future<void> checkAccess({
     String targetPackage = AppConstants.whatsappStandardPackage,
   }) async {
-    if (state.isChecking || state.isRequesting) {
+    if (state.isRequesting ||
+        (state.isChecking && targetPackage == _activePackage)) {
       return;
     }
 
+    final requestId = ++_requestId;
     _activePackage = targetPackage;
     state = const AccessChecking();
 
     try {
       final result = await _checkAccess(targetPackage: targetPackage);
+      if (!ref.mounted || requestId != _requestId) return;
       state = switch (result) {
         Success(:final data) => _mapDomainAccessState(data),
         Failure(:final failure) => AccessFailure(failure),
       };
     } on AppFailure catch (failure) {
+      if (!ref.mounted || requestId != _requestId) return;
       state = AccessFailure(failure);
     } catch (e) {
+      if (!ref.mounted || requestId != _requestId) return;
       state = AccessFailure(
-        UnknownFailure('Unexpected failure verifying storage access: $e'),
+        const UnknownFailure('Could not check access. Please try again.'),
       );
     }
   }
 
-  /// Prompts the user via SAF directory picker to grant access to [targetPackage].
+  /// Prompts the user for Android file access to grant access to [targetPackage].
   ///
   /// Concurrency guard: Ignores reentrant requests while checking or requesting.
   Future<void> requestAccess({
@@ -73,28 +79,30 @@ class AccessNotifier extends Notifier<AccessState> {
       return;
     }
 
+    final requestId = ++_requestId;
     _activePackage = targetPackage;
     state = const AccessRequesting();
 
     try {
       final result = await _requestAccess(targetPackage: targetPackage);
+      if (!ref.mounted || requestId != _requestId) return;
       state = switch (result) {
         Success(:final data) => _mapDomainAccessState(data),
         Failure(:final failure) => AccessFailure(failure),
       };
     } on AppFailure catch (failure) {
+      if (!ref.mounted || requestId != _requestId) return;
       state = AccessFailure(failure);
     } catch (e) {
+      if (!ref.mounted || requestId != _requestId) return;
       state = AccessFailure(
-        UnknownFailure('Unexpected failure requesting storage access: $e'),
+        const UnknownFailure('Could not request access. Please try again.'),
       );
     }
   }
 
   /// Refreshes current access status by re-checking storage permissions.
-  Future<void> refreshAccess({
-    String targetPackage = AppConstants.whatsappStandardPackage,
-  }) {
+  Future<void> refreshAccess({String targetPackage = ''}) {
     final pkg = targetPackage.isNotEmpty ? targetPackage : _activePackage;
     return checkAccess(targetPackage: pkg);
   }

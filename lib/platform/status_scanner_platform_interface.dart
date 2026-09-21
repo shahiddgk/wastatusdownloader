@@ -165,6 +165,9 @@ class CacheClearResultDto {
 /// Implemented by [MethodChannelStatusScanner] for production Android execution and
 /// mockable for isolated unit tests without device or engine dependencies.
 abstract interface class StatusScannerPlatformInterface {
+  /// Lists saved media independently from expiring WhatsApp statuses.
+  Future<List<StatusDto>> getSavedStatuses();
+
   /// Queries persisted SAF permissions and validates tree health.
   Future<PlatformAccessCheckResult> checkFolderAccess({
     String targetPackage = AppConstants.whatsappStandardPackage,

@@ -205,6 +205,33 @@ void main() {
         expect(state.isFailure, isTrue);
       });
 
+      test(
+        'source switch ignores a late permission check for the previous source',
+        () async {
+          final standard = Completer<Result<StorageAccessState>>();
+          final business = Completer<Result<StorageAccessState>>();
+          final notifier = container.read(accessNotifierProvider.notifier);
+          repository.checkCompleter = standard;
+          final first = notifier.checkAccess();
+          repository.checkCompleter = business;
+          final second = notifier.checkAccess(
+            targetPackage: 'com.whatsapp.w4b',
+          );
+          business.complete(
+            const Result.success(
+              StorageAccessGranted(targetPackage: 'com.whatsapp.w4b'),
+            ),
+          );
+          await second;
+          standard.complete(const Result.success(StorageAccessNotGranted()));
+          await first;
+          expect(
+            container.read(accessNotifierProvider),
+            const AccessGranted(targetPackage: 'com.whatsapp.w4b'),
+          );
+        },
+      );
+
       test('ignores duplicate concurrent checkAccess requests', () async {
         final completer = Completer<Result<StorageAccessState>>();
         repository.checkCompleter = completer;

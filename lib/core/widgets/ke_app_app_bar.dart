@@ -51,25 +51,12 @@ class KeAppAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
               ),
               ...actions,
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: onAvatarPressed,
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: scheme.primary,
-                    shape: BoxShape.circle,
-                    boxShadow: scheme.brightness == Brightness.dark
-                        ? NeonVaultColors.softGlow
-                        : null,
-                  ),
-                  child: Icon(
-                    Icons.person_outline_rounded,
-                    color: scheme.onPrimary,
-                  ),
+              if (onAvatarPressed != null)
+                IconButton(
+                  tooltip: 'Profile',
+                  onPressed: onAvatarPressed,
+                  icon: const Icon(Icons.person_outline_rounded),
                 ),
-              ),
             ],
           ),
         ),

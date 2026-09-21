@@ -17,16 +17,6 @@ import '../common/feedback/toast.dart';
 import '../common/sheets/bottom_sheet.dart';
 import 'status_grid.dart';
 
-/// Screen B: Primary Status Home Screen.
-///
-/// Implements specification from docs/design/keeva-ui-spec.md Section Screen B:
-/// - Brand Header with Private trust badge.
-/// - WhatsApp / WA Business source switcher.
-/// - Section header showing moment count.
-/// - Filter chips (All, Photos, Videos).
-/// - High-performance 9:16 media grid with virtualized slivers.
-/// - Signature KeepButton integration via [saveNotifierProvider].
-/// - Non-blocking pull-to-refresh.
 class MomentsScreen extends ConsumerStatefulWidget {
   final ValueChanged<StatusItem>? onStatusSelected;
   final VoidCallback? onExploreKept;
@@ -204,67 +194,6 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen> {
               child: _buildSourceSelector(context, activePackage),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: KeCard(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 11,
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.circle,
-                      size: 8,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Encrypted Sandbox Active',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                    KeBadge(
-                      label: 'On-device',
-                      leading: Icon(
-                        Icons.shield_outlined,
-                        size: 14,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Today',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      const SizedBox(width: 10),
-                      KeBadge(label: '${allItems.length} status'),
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '${allItems.length} status available',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -300,6 +229,15 @@ class _MomentsScreenState extends ConsumerState<MomentsScreen> {
             Expanded(
               child: StatusGrid(
                 items: filteredItems,
+                onEmptyAction: () {
+                  if (_activeFilter != MediaFilter.all && allItems.isNotEmpty) {
+                    setState(() => _activeFilter = MediaFilter.all);
+                  } else {
+                    ref
+                        .read(statusListNotifierProvider.notifier)
+                        .refresh(targetPackage: activePackage);
+                  }
+                },
                 isLoading: isInitialOrLoading,
                 emptyScenario:
                     _activeFilter != MediaFilter.all && allItems.isNotEmpty

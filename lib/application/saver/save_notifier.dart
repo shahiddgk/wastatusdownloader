@@ -44,6 +44,7 @@ class SaveNotifier extends Notifier<SaveState> {
       state = switch (result) {
         Success(:final data) => () {
           ref.read(statusListNotifierProvider.notifier).markItemSaved(item.id);
+          ref.invalidate(savedStatusesProvider);
           return SaveSuccess(itemId: item.id, savedMedia: data);
         }(),
         Failure(:final failure) => SaveFailure(

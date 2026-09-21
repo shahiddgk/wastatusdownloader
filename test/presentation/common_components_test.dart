@@ -35,13 +35,13 @@ void main() {
         await tester.pumpWidget(
           buildTestable(
             PrimaryButton(
-              label: 'Connect Media Folder',
+              label: 'Allow access',
               onPressed: () => tapped = true,
             ),
           ),
         );
 
-        expect(find.text('Connect Media Folder'), findsOneWidget);
+        expect(find.text('Allow access'), findsOneWidget);
         await tester.tap(find.byType(PrimaryButton));
         await tester.pump();
         expect(tapped, isTrue);
@@ -240,10 +240,10 @@ void main() {
           ),
         );
 
-        expect(find.text('Connect your status'), findsOneWidget);
-        expect(find.text('Connect Media Folder'), findsOneWidget);
+        expect(find.text('Allow status access'), findsOneWidget);
+        expect(find.text('Allow access'), findsOneWidget);
 
-        await tester.tap(find.text('Connect Media Folder'));
+        await tester.tap(find.text('Allow access'));
         await tester.pump();
         expect(buttonPressed, isTrue);
       });
@@ -253,7 +253,7 @@ void main() {
           buildTestable(const EmptyState(scenario: EmptyScenario.vaultEmpty)),
         );
 
-        expect(find.text('Your vault is empty'), findsOneWidget);
+        expect(find.text('No saved statuses'), findsOneWidget);
       });
     });
 

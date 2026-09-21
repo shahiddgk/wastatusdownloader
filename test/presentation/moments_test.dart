@@ -222,7 +222,7 @@ void main() {
         );
 
         expect(find.byType(EmptyState), findsOneWidget);
-        expect(find.text('No status right now'), findsOneWidget);
+        expect(find.text('No statuses yet'), findsOneWidget);
       });
 
       testWidgets('renders ErrorState when failure is provided', (
@@ -291,8 +291,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Today'), findsOneWidget);
-        expect(find.text('2 status available'), findsOneWidget);
+        expect(find.text('Today'), findsNothing);
+        expect(find.text('Encrypted Sandbox Active'), findsNothing);
         expect(find.text('All (2)'), findsOneWidget);
         expect(find.text('Photos (1)'), findsOneWidget);
         expect(find.text('Videos (1)'), findsOneWidget);

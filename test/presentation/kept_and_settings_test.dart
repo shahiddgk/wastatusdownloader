@@ -75,6 +75,13 @@ void main() {
   }) {
     return ProviderScope(
       overrides: [
+        savedStatusesProvider.overrideWith(
+          (ref) async =>
+              mockStatusListNotifier?.initialState.items
+                  .where((i) => i.isSaved)
+                  .toList() ??
+              [],
+        ),
         if (mockAccessNotifier != null)
           accessNotifierProvider.overrideWith(() => mockAccessNotifier),
         if (mockStatusListNotifier != null)
@@ -105,13 +112,12 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Saved Vault'), findsOneWidget);
-        expect(find.text('0 status safely saved'), findsOneWidget);
+        expect(find.text('Saved'), findsOneWidget);
         expect(find.byType(EmptyState), findsOneWidget);
-        expect(find.text('Your vault is empty'), findsOneWidget);
-        expect(find.text('Explore Status'), findsOneWidget);
+        expect(find.text('No saved statuses'), findsOneWidget);
+        expect(find.text('View statuses'), findsOneWidget);
 
-        await tester.tap(find.text('Explore Status'));
+        await tester.tap(find.text('View statuses'));
         await tester.pump();
         expect(explored, isTrue);
       });
@@ -138,11 +144,6 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.text('2 status safely saved'), findsOneWidget);
-          expect(
-            find.text('5.0 MB stored in Pictures/SavedStatus'),
-            findsOneWidget,
-          );
           expect(find.text('All (2)'), findsOneWidget);
           expect(find.text('Photos (1)'), findsOneWidget);
           expect(find.text('Videos (1)'), findsOneWidget);
@@ -165,59 +166,54 @@ void main() {
     // SETTINGS SCREEN
     // =========================================================================
     group('SettingsScreen', () {
-      testWidgets('renders connected folder status and version info', (
+      testWidgets('shows access and only functional theme choices', (
         tester,
       ) async {
-        tester.view.devicePixelRatio = 1.0;
-        tester.view.physicalSize = const Size(800, 1400);
-        addTearDown(() {
-          tester.view.resetPhysicalSize();
-          tester.view.resetDevicePixelRatio();
-        });
-
-        final accessMock = MockAccessNotifier(
-          const AccessGranted(targetPackage: 'com.whatsapp'),
-        );
-
+        ThemeMode? chosen;
         await tester.pumpWidget(
-          buildTestable(const SettingsScreen(), mockAccessNotifier: accessMock),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.text('Settings'), findsOneWidget);
-        expect(find.text('WhatsApp'), findsOneWidget);
-        expect(find.text('WhatsApp Business'), findsOneWidget);
-        expect(find.text('Folder Connected (com.whatsapp)'), findsOneWidget);
-        expect(find.text('Reconnect Folder'), findsOneWidget);
-        expect(find.text('Private & Local-First'), findsOneWidget);
-        expect(find.text('1.0.0 (Production Release)'), findsOneWidget);
-
-        // Tap Reconnect
-        await tester.tap(find.text('Reconnect Folder'));
-        await tester.pump();
-        expect(accessMock.requested, isTrue);
-      });
-
-      testWidgets('tapping Private & Local-First opens trust bottom sheet', (
-        tester,
-      ) async {
-        final accessMock = MockAccessNotifier(const AccessInitial());
-
-        await tester.pumpWidget(
-          buildTestable(const SettingsScreen(), mockAccessNotifier: accessMock),
-        );
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text('Private & Local-First'));
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text(
-            'WA Status Downloader operates 100% locally on your device. It requires zero internet permissions, connects strictly to your selected WhatsApp folder via Android Storage Access Framework, and never uploads or logs your media.',
+          buildTestable(
+            SettingsScreen(onThemeModeChanged: (mode) => chosen = mode),
+            mockAccessNotifier: MockAccessNotifier(const AccessGranted()),
           ),
-          findsOneWidget,
         );
+        expect(find.text('Allowed'), findsOneWidget);
+        expect(find.text('Original Bitrate Preservation'), findsNothing);
+        expect(find.textContaining('Encryption'), findsNothing);
+        await tester.tap(find.text('Dark theme'));
+        expect(chosen, ThemeMode.dark);
       });
+
+      testWidgets('requests missing access', (tester) async {
+        final mock = MockAccessNotifier(const AccessNotGranted());
+        await tester.pumpWidget(
+          buildTestable(const SettingsScreen(), mockAccessNotifier: mock),
+        );
+        await tester.tap(find.text('Status access'));
+        expect(mock.requested, isTrue);
+      });
+
+      testWidgets(
+        'Saved uses saved copies even when current statuses are empty',
+        (tester) async {
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                statusListNotifierProvider.overrideWith(
+                  () => MockStatusListNotifier(const StatusListEmpty()),
+                ),
+                savedStatusesProvider.overrideWith((ref) async => [savedImage]),
+              ],
+              child: MaterialApp(
+                theme: KeevaTheme.darkTheme,
+                home: const KeptVaultScreen(),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(find.byType(StatusCard), findsOneWidget);
+          expect(find.text('All (1)'), findsOneWidget);
+        },
+      );
     });
   });
 }

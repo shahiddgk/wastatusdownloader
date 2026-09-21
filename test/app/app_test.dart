@@ -56,6 +56,9 @@ void main() {
   }) {
     return ProviderScope(
       overrides: [
+        savedStatusesProvider.overrideWith(
+          (ref) async => items.where((i) => i.isSaved).toList(),
+        ),
         accessNotifierProvider.overrideWith(
           () => MockAccessNotifier(accessState),
         ),
@@ -84,7 +87,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(PermissionOnboardingScreen), findsOneWidget);
-        expect(find.text('WA Status Downloader'), findsOneWidget);
+        expect(find.text('Allow access'), findsOneWidget);
         expect(find.byType(MomentsScreen), findsNothing);
       },
     );
@@ -105,7 +108,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(MomentsScreen), findsOneWidget);
-      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('All (1)'), findsOneWidget);
       expect(find.byType(StatusCard), findsOneWidget);
     });
 
@@ -133,7 +136,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(KeptVaultScreen), findsOneWidget);
-      expect(find.text('1 status safely saved'), findsOneWidget);
+      expect(find.text('All (1)'), findsOneWidget);
 
       // Switch to Settings tab
       await tester.tap(
@@ -144,7 +147,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(SettingsScreen), findsOneWidget);
-      expect(find.text('Storage & Access'), findsOneWidget);
+      expect(find.text('Status access'), findsOneWidget);
     });
 
     testWidgets('tapping status card in Moments opens MediaViewerScreen', (

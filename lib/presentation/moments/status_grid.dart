@@ -110,7 +110,7 @@ class StatusGrid extends StatelessWidget {
 
         return GridView.builder(
           controller: controller,
-          physics: physics,
+          physics: physics ?? const AlwaysScrollableScrollPhysics(),
           padding: padding ?? defaultPadding,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: columns,
