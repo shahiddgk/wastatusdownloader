@@ -92,7 +92,7 @@ void main() {
 
     group('KeepButton', () {
       testWidgets(
-        'cardOverlay has 48x48dp hit box and correct semantics in idle',
+        'cardOverlay shows Save with a 48dp touch target and invokes save',
         (tester) async {
           var tapped = false;
           await tester.pumpWidget(
@@ -102,10 +102,11 @@ void main() {
           );
 
           final size = tester.getSize(find.byType(KeepButton));
-          expect(size.width, equals(48.0));
-          expect(size.height, equals(48.0));
+          expect(size.width, greaterThanOrEqualTo(48.0));
+          expect(size.height, greaterThanOrEqualTo(48.0));
 
           expect(find.byIcon(AppIcons.actionKeep), findsOneWidget);
+          expect(find.text('Save'), findsOneWidget);
 
           await tester.tap(find.byType(KeepButton));
           await tester.pump();
@@ -119,6 +120,7 @@ void main() {
         );
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.text('Saving'), findsOneWidget);
       });
 
       testWidgets('displays checkmark when success or alreadyKept', (
@@ -131,11 +133,10 @@ void main() {
         );
 
         expect(find.byIcon(AppIcons.actionCheck), findsOneWidget);
+        expect(find.text('Saved'), findsOneWidget);
       });
 
-      testWidgets('viewerAction variant renders Keep / Kept pill', (
-        tester,
-      ) async {
+      testWidgets('viewerAction variant renders Save pill', (tester) async {
         await tester.pumpWidget(
           buildTestable(
             KeepButton(
@@ -146,7 +147,7 @@ void main() {
           ),
         );
 
-        expect(find.text('Keep'), findsOneWidget);
+        expect(find.text('Save'), findsOneWidget);
       });
     });
 

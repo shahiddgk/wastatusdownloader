@@ -8,6 +8,7 @@ import 'package:whatsapp_status_saver/application/providers.dart';
 import 'package:whatsapp_status_saver/application/statuses/status_list_notifier.dart';
 import 'package:whatsapp_status_saver/application/statuses/status_list_state.dart';
 import 'package:whatsapp_status_saver/domain/entities/status_item.dart';
+import 'package:whatsapp_status_saver/presentation/common/buttons/keep_button.dart';
 import 'package:whatsapp_status_saver/presentation/kept/kept_vault_screen.dart';
 import 'package:whatsapp_status_saver/presentation/moments/moments_screen.dart';
 import 'package:whatsapp_status_saver/presentation/moments/status_card.dart';
@@ -170,7 +171,16 @@ void main() {
 
       expect(find.byType(MediaViewerScreen), findsOneWidget);
       expect(find.text('Share'), findsOneWidget);
-      expect(find.text('Saved ✓'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.descendant(
+            of: find.byType(MediaViewerScreen),
+            matching: find.byType(KeepButton),
+          ),
+          matching: find.text('Saved'),
+        ),
+        findsOneWidget,
+      );
     });
   });
 }

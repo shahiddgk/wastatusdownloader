@@ -190,7 +190,10 @@ class _StatusCardState extends State<StatusCard> {
                           top: AppSpacing.space8,
                           left: AppSpacing.space8,
                           child: KeBadge(
-                            label: 'Saved',
+                            label:
+                                MediaQuery.textScalerOf(context).scale(11) >= 17
+                                ? ''
+                                : 'Saved',
                             uppercase: false,
                             leading: Icon(
                               AppIcons.actionCheck,
@@ -205,7 +208,12 @@ class _StatusCardState extends State<StatusCard> {
                           top: AppSpacing.space8,
                           left: AppSpacing.space8,
                           child: KeBadge(
-                            label: widget.item.isVideo ? 'Video' : 'Photo',
+                            label:
+                                MediaQuery.textScalerOf(context).scale(11) >= 17
+                                ? ''
+                                : widget.item.isVideo
+                                ? 'Video'
+                                : 'Photo',
                             leading: Icon(
                               widget.item.isVideo
                                   ? Icons.play_arrow_rounded
@@ -243,34 +251,58 @@ class _StatusCardState extends State<StatusCard> {
                               colors: [Colors.transparent, Color(0xE6000000)],
                             ),
                           ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                    bottom: AppSpacing.space8,
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
+                              if (widget.contactLabel != null)
+                                widget.contactLabel!,
+                              const SizedBox(height: AppSpacing.space4),
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final stackActions =
+                                      constraints.maxWidth < 150 ||
+                                      MediaQuery.textScalerOf(context)
+                                              .scale(14) >=
+                                          21;
+                                  final freshness = FreshnessLabel(
+                                    timestamp: widget.item.lastModified,
+                                  );
+                                  final saveButton = KeepButton(
+                                    state: widget.keepState,
+                                    onPressed: widget.onKeep,
+                                    onAlreadyKeptPressed: widget.onAlreadyKept,
+                                    variant: KeepButtonVariant.cardOverlay,
+                                  );
+
+                                  if (stackActions) {
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        freshness,
+                                        const SizedBox(
+                                          height: AppSpacing.space4,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: saveButton,
+                                        ),
+                                      ],
+                                    );
+                                  }
+
+                                  return Row(
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                        CrossAxisAlignment.center,
                                     children: [
-                                      if (widget.contactLabel != null)
-                                        widget.contactLabel!,
-                                      FreshnessLabel(
-                                        timestamp: widget.item.lastModified,
-                                      ),
+                                      Expanded(child: freshness),
+                                      const SizedBox(width: AppSpacing.space8),
+                                      saveButton,
                                     ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: AppSpacing.space4),
-                              KeepButton(
-                                state: widget.keepState,
-                                onPressed: widget.onKeep,
-                                onAlreadyKeptPressed: widget.onAlreadyKept,
-                                variant: KeepButtonVariant.cardOverlay,
+                                  );
+                                },
                               ),
                             ],
                           ),

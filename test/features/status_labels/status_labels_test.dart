@@ -144,34 +144,47 @@ void main() {
   );
 
   testWidgets('add, edit, and remove a name or phone number', (tester) async {
+    final semantics = tester.ensureSemantics();
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
+    expect(find.text('Add name / number'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Add name or number for this status'),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Add name / number'));
     await tester.pumpAndSettle();
+    expect(find.text('Who posted this status?'), findsOneWidget);
     expect(
-      find.textContaining('Sender details are not available'),
+      find.textContaining('WhatsApp does not include the sender name'),
       findsOneWidget,
     );
     await tester.enterText(find.byType(TextField), 'Ayesha');
-    await tester.tap(find.text('Save label'));
+    await tester.tap(find.text('Show on status'));
     await tester.pumpAndSettle();
     expect(find.text('Ayesha'), findsOneWidget);
+    expect(find.text('YOUR LABEL'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Name or number you added: Ayesha. Edit'),
+      findsOneWidget,
+    );
     expect(await repository.read('photo'), 'Ayesha');
 
     await tester.tap(find.text('Ayesha'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), '+92 300 123 4567');
-    await tester.tap(find.text('Save label'));
+    await tester.tap(find.text('Show on status'));
     await tester.pumpAndSettle();
     expect(find.text('+92 300 123 4567'), findsOneWidget);
 
     await tester.tap(find.text('+92 300 123 4567'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Remove label'));
+    await tester.tap(find.text('Remove from this status'));
     await tester.pumpAndSettle();
     expect(find.text('Add name / number'), findsOneWidget);
     expect(await repository.read('photo'), isNull);
     expect(tester.takeException(), isNull);
+    semantics.dispose();
   });
 
   testWidgets('a failed save keeps the editor and supports retry', (
@@ -183,7 +196,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'Ayesha');
     preferences.failWrites = true;
-    await tester.tap(find.text('Save label'));
+    await tester.tap(find.text('Show on status'));
     await tester.pumpAndSettle();
     expect(
       find.text('Could not save this label. Please try again.'),
@@ -191,7 +204,7 @@ void main() {
     );
     expect(await repository.read('photo'), isNull);
     preferences.failWrites = false;
-    await tester.tap(find.text('Save label'));
+    await tester.tap(find.text('Show on status'));
     await tester.pumpAndSettle();
     expect(find.byType(TextField), findsNothing);
     expect(find.text('Ayesha'), findsOneWidget);

@@ -88,19 +88,18 @@ All Keeva presentation components adhere to the following architectural rules:
 ---
 
 ### 2.6 `KeepButton` (Signature Component)
-* **Purpose:** The signature Keeva micro-interaction button to save a status item to the gallery.
+* **Purpose:** Save a status item to the gallery with a clearly labelled action.
 * **Variants:**
-  * `CardOverlayPill`: Circular 32dp visual affordance embedded on the media card.
-  * `ViewerActionPill`: Full 48dp height pill button with label "Keep" in media viewer.
+  * `CardOverlayPill`: 40dp-high mint pill labelled "Save" on the media card, within a 48dp-high touch target.
+  * `ViewerActionPill`: Full 48dp-high mint pill labelled "Save" in the media viewer.
 * **States:**
-  * `Idle`: Translucent dark glass container (`rgba(0,0,0,0.50)`), mint bookmark icon (`#10B981`).
-  * `Pressed`: Scales to `0.94` over 80ms + `HapticFeedback.lightImpact()`.
-  * `Saving`: Displays 16dp mint circular progress indicator.
-  * `Success`: Morphs to solid mint checkmark (`#10B981`) with expanding aura wave.
-  * `AlreadyKept`: Subdued container (`#064E3B`), muted mint checkmark (`#A7F3D0`).
-  * `Failure`: Amber warning icon + `HapticFeedback.mediumImpact()`.
-* **Dimensions:** Visual 32×32dp (card) or 48dp height (viewer). **Touch Target:** Guaranteed 48×48dp hit box via padding.
-* **Accessibility:** Semantics: *"Keep this moment. Button."* When already kept: *"Already kept in vault. Button."*
+  * `Idle`: Mint container (`#10B981`), dark bookmark icon and "Save" label.
+  * `Pressed`: Card pill scales to `0.96` over 80ms + `HapticFeedback.lightImpact()`.
+  * `Saving`: Displays a 16dp spinner and "Saving" label; repeated taps are disabled.
+  * `Success` / `AlreadyKept`: Dark mint container (`#064E3B`), pale mint checkmark and "Saved" label.
+  * `Failure`: Amber container and "Retry" label; the card pill shows a warning icon. Entering this state triggers `HapticFeedback.mediumImpact()`.
+* **Dimensions:** 40dp-high card pill or 48dp-high viewer pill. **Touch Target:** At least 48dp high and wide.
+* **Accessibility:** Semantics: *"Save this status. Button."* When saved: *"Already saved. Button."* when an already-saved action is available.
 
 ---
 
@@ -111,10 +110,11 @@ All Keeva presentation components adhere to the following architectural rules:
 * **Dimensions:** Fixed aspect ratio `9:16` (width varies by responsive column calculation). Corner Radius: 12dp (`radiusMd`).
 * **Spacing:** 8dp grid spacing between cards.
 * **Overlays:**
-  * Top-Left: `[✓ Kept]` badge if saved.
+  * Top-Left: `[✓ Saved]` badge if saved.
+  * At large text scale, the top-left badge shows only its icon; the card's spoken label still names the media type and saved state.
   * Top-Right: `[▶ 0:24]` video badge if video.
-  * Bottom-Left: Relative time (`14m ago`).
-  * Bottom-Right: `KeepButton` (48dp touch target).
+  * Bottom: Relative time (`14m ago`) beside the labelled Save action (48dp-high touch target).
+  * Compact cards: When the card content width is below 150dp or 14sp text scales to at least 21dp, the relative time moves to its own row above the right-aligned Save action.
   * Bottom Scrim: Linear gradient from transparent to `rgba(0,0,0,0.70)`.
 * **Accessibility:** Reads: *"Video status, duration 24 seconds, 14 minutes ago. Double tap to preview."*
 

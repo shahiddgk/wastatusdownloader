@@ -115,10 +115,11 @@ void main() {
         expect(find.text('15m ago'), findsOneWidget);
         expect(find.byType(VideoBadge), findsNothing);
         expect(find.text('Saved'), findsNothing);
+        expect(find.text('Save'), findsOneWidget);
         expect(find.byType(KeepButton), findsOneWidget);
       });
 
-      testWidgets('renders video status with VideoBadge and Kept badge', (
+      testWidgets('renders video status with VideoBadge and Saved action', (
         tester,
       ) async {
         await tester.pumpWidget(
@@ -138,7 +139,13 @@ void main() {
         );
 
         expect(find.byType(VideoBadge), findsOneWidget);
-        expect(find.text('Saved'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(KeepButton),
+            matching: find.text('Saved'),
+          ),
+          findsOneWidget,
+        );
         expect(find.text('2h ago'), findsOneWidget);
       });
 
@@ -165,7 +172,7 @@ void main() {
         expect(tapped, isTrue);
       });
 
-      testWidgets('tapping KeepButton invokes onKeep callback', (tester) async {
+      testWidgets('tapping card Save invokes onKeep callback', (tester) async {
         var kept = false;
         await tester.pumpWidget(
           buildTestable(

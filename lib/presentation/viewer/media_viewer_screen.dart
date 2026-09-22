@@ -427,7 +427,10 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen>
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        StatusContactLabel(statusId: widget.item.id),
+                        StatusContactLabel(
+                          statusId: widget.item.id,
+                          style: StatusContactLabelStyle.viewer,
+                        ),
                         Text(
                           FreshnessLabel.formatFreshness(
                             widget.item.lastModified,

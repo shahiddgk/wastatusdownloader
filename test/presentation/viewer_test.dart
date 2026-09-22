@@ -129,7 +129,7 @@ void main() {
 
         expect(find.text('15m ago'), findsOneWidget);
         expect(find.text('Share'), findsOneWidget);
-        expect(find.text('Keep'), findsOneWidget);
+        expect(find.text('Save'), findsOneWidget);
         expect(find.byType(KeepButton), findsOneWidget);
         expect(viewerMock.preparedItem?.id, equals(testItem.id));
       },
@@ -195,7 +195,7 @@ void main() {
       expect(find.text('2.00 MB'), findsOneWidget);
     });
 
-    testWidgets('tapping Keep button saves item', (tester) async {
+    testWidgets('tapping Save button saves item', (tester) async {
       tester.view.devicePixelRatio = 1.0;
       tester.view.physicalSize = const Size(800, 1000);
       addTearDown(() {

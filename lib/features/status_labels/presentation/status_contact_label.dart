@@ -6,8 +6,13 @@ import '../application/status_label_controller.dart';
 
 class StatusContactLabel extends ConsumerWidget {
   final String statusId;
+  final StatusContactLabelStyle style;
 
-  const StatusContactLabel({super.key, required this.statusId});
+  const StatusContactLabel({
+    super.key,
+    required this.statusId,
+    this.style = StatusContactLabelStyle.card,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,57 +23,134 @@ class StatusContactLabel extends ConsumerWidget {
         : labelState.hasError
         ? 'Retry label'
         : label ?? 'Add name / number';
+    final isKnown = label != null && !labelState.hasError;
+    final useCardStyle = style == StatusContactLabelStyle.card;
+    final foreground = Colors.white;
+    final background = useCardStyle
+        ? isKnown
+              ? const Color(0xD9164E43)
+              : const Color(0xCC101820)
+        : Colors.transparent;
 
     return Tooltip(
-      message: label == null ? text : 'Edit name or number: $label',
+      message: labelState.hasError
+          ? 'Retry loading the name or number for this status'
+          : label == null
+          ? 'Add the name or number to show it on this status'
+          : 'Edit the name or number shown on this status',
       child: Semantics(
         button: true,
-        label: label == null ? text : 'Name or number you added: $label. Edit',
+        enabled: !labelState.isLoading,
+        label: labelState.hasError
+            ? 'Could not load status owner. Retry'
+            : label == null
+            ? 'Add name or number for this status'
+            : 'Name or number you added: $label. Edit',
         excludeSemantics: true,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppSpacing.space8),
-          onTap: labelState.isLoading
-              ? null
-              : () {
-                  if (labelState.hasError) {
-                    ref.invalidate(statusLabelProvider(statusId));
-                    return;
-                  }
-                  showModalBottomSheet<void>(
-                    context: context,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    showDragHandle: true,
-                    builder: (context) => _ContactLabelEditor(
-                      statusId: statusId,
-                      initialLabel: label ?? '',
-                    ),
-                  );
-                },
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              minHeight: AppSpacing.minTouchTarget,
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.person_outline_rounded,
-                  color: Colors.white,
-                  size: 16,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: labelState.isLoading
+                ? null
+                : () {
+                    if (labelState.hasError) {
+                      ref.invalidate(statusLabelProvider(statusId));
+                      return;
+                    }
+                    showModalBottomSheet<void>(
+                      context: context,
+                      isScrollControlled: true,
+                      useSafeArea: true,
+                      showDragHandle: true,
+                      builder: (context) => _ContactLabelEditor(
+                        statusId: statusId,
+                        initialLabel: label ?? '',
+                      ),
+                    );
+                  },
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: AppSpacing.minTouchTarget,
+              ),
+              child: Ink(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.space8,
                 ),
-                const SizedBox(width: AppSpacing.space4),
-                Expanded(
-                  child: Text(
-                    text,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+                decoration: BoxDecoration(
+                  color: background,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: useCardStyle
+                        ? Colors.white.withValues(alpha: isKnown ? 0.22 : 0.16)
+                        : Colors.transparent,
                   ),
                 ),
-              ],
+                child: Row(
+                  children: [
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: isKnown
+                            ? Colors.white.withValues(alpha: 0.15)
+                            : Theme.of(context).colorScheme.primary.withValues(
+                                alpha: useCardStyle ? 0.85 : 0.15,
+                              ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isKnown
+                            ? Icons.person_rounded
+                            : Icons.person_add_alt_1_rounded,
+                        color: isKnown
+                            ? Colors.white
+                            : useCardStyle
+                            ? Theme.of(context).colorScheme.onPrimary
+                            : Theme.of(context).colorScheme.primary,
+                        size: 17,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.space8),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (isKnown && useCardStyle)
+                            Text(
+                              'YOUR LABEL',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.72),
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.7,
+                                  ),
+                            ),
+                          Text(
+                            text,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: foreground,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      isKnown ? Icons.edit_rounded : Icons.add_rounded,
+                      color: foreground.withValues(alpha: 0.82),
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -76,6 +158,8 @@ class StatusContactLabel extends ConsumerWidget {
     );
   }
 }
+
+enum StatusContactLabelStyle { card, viewer }
 
 class _ContactLabelEditor extends ConsumerStatefulWidget {
   final String statusId;
@@ -145,13 +229,32 @@ class _ContactLabelEditorState extends ConsumerState<_ContactLabelEditor> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'Name or number',
-                  style: Theme.of(context).textTheme.titleLarge,
+                Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.space12),
+                    Expanded(
+                      child: Text(
+                        'Who posted this status?',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.space8),
                 Text(
-                  'Sender details are not available with this status. Add a label to help you recognize it. This label is only used in this app.',
+                  'WhatsApp does not include the sender name in the media file. Add a name or number and it will be shown on this status in this app.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppSpacing.space16),
@@ -173,12 +276,12 @@ class _ContactLabelEditorState extends ConsumerState<_ContactLabelEditor> {
                 const SizedBox(height: AppSpacing.space16),
                 FilledButton(
                   onPressed: _saving ? null : () => _save(_controller.text),
-                  child: Text(_saving ? 'Saving…' : 'Save label'),
+                  child: Text(_saving ? 'Saving…' : 'Show on status'),
                 ),
                 if (widget.initialLabel.isNotEmpty)
                   TextButton(
                     onPressed: _saving ? null : () => _save(''),
-                    child: const Text('Remove label'),
+                    child: const Text('Remove from this status'),
                   ),
               ],
             ),

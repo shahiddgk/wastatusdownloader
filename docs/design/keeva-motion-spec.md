@@ -52,38 +52,36 @@ class KeevaCurves {
 
 ---
 
-## 3. The Signature "Keep" Interaction
+## 3. The "Save" Interaction
 
-"Keep" is the emotional centerpiece of Keeva. It transforms temporary ephemeral media into permanent, safely stored memories.
+The labelled Save action makes the gallery export clear on cards and in the media viewer.
 
 ```
 STATE CHOREOGRAPHY:
 [Idle] ───────► [Pressed] ───────► [Saving] ───────► [Success]
-(Mint Bookmark) (Scale 0.94)       (16dp Spinner)    (Aura Pulse + Check)
- 48dp target     Haptic: Light      240ms loop        Haptic: Selection Click
+(Mint Save pill) (Scale 0.96)       (Spinner + label) (Saved + Check)
+ 48dp target     Haptic: Light       Taps disabled     Haptic: Selection Click
 ```
 
 ### 3.1 Step-by-Step Interaction Flow
 1. **Idle State:**
-   * Icon: `bookmark_add` in Aurora Mint (`#10B981`) inside a 32dp dark glass disc (`rgba(0,0,0,0.50)`).
-   * Semantics: *"Keep this moment. Button."*
+   * The card shows a 40dp-high mint pill with a dark bookmark icon and "Save" label inside a 48dp-high touch target. The viewer uses a 48dp-high pill.
+   * Semantics: *"Save this status. Button."*
 2. **Pressed State (Touch Down):**
-   * Button scales down from `1.0` to `0.94` over 80ms using `KeevaCurves.standardEasing`.
+   * The card pill scales down from `1.0` to `0.96` over 80ms using the button spring curve.
    * Haptic: Trigger `HapticFeedback.lightImpact()` immediately on pointer down.
 3. **Saving State (Async In-Flight):**
-   * If save takes > 150ms, bookmark icon fades out over 60ms and a 16dp circular progress indicator in Aurora Mint fades in.
-   * Button remains responsive; double-taps are debounced.
+   * The action displays a 16dp spinner and "Saving" label while the save is in flight.
+   * Taps are disabled until the save completes.
 4. **Success State (Saved to MediaStore):**
-   * Spinner cross-fades into `check_circle` over 120ms with `KeevaCurves.buttonSpring`.
-   * **Aura Wave:** A subtle concentric emerald ring (`#10B981` at 25% opacity) expands outward from the button from 32dp to 48dp diameter and fades to 0% opacity over 260ms.
-   * Card top-left badge updates from hidden to `[✓ Kept]` pill over 160ms with vertical slide (4dp).
+   * The pill shows a checkmark and "Saved" label on a dark mint container. The card's top-left badge shows "Saved".
    * Haptic: Trigger `HapticFeedback.selectionClick()`.
-5. **Already Kept State:**
-   * If user taps an already kept card, button performs an informative 6dp horizontal nudge (shake) over 180ms with `HapticFeedback.selectionClick()` and surfaces options modal ("View in Kept Vault" or "Save Copy").
+5. **Already Saved State:**
+   * Tapping an interactive "Saved" action performs a 6dp horizontal nudge over 180ms with `HapticFeedback.selectionClick()` and opens options to view the saved item or save another copy.
 6. **Failure State:**
-   * Button briefly flashes amber outline with a 2-step horizontal shake (8dp) over 200ms.
+   * The pill changes to amber with a "Retry" label; the card variant shows a warning icon.
    * Haptic: Trigger `HapticFeedback.mediumImpact()`.
-   * Transient toast appears: *"Unable to keep moment. Check device storage."*
+   * The user can tap Retry to attempt the save again.
 
 ---
 
@@ -141,5 +139,5 @@ Keeva fully respects user system accessibility settings:
 * **When Reduced Motion is Enabled:**
   * Staggered grid entrance animations are **completely disabled**; items appear instantly.
   * Hero transitions from grid to viewer are replaced with a fast 100ms fade-in (`CrossFade`).
-  * "Keep" button aura wave expansion is removed; button instantly toggles between bookmark and checkmark.
+  * The Save pill skips its press-scale and saved-state nudge; state labels and icons still update.
   * Swipe-to-dismiss in media viewer remains interactive for finger-tracking, but release snaps instantly without bounce.

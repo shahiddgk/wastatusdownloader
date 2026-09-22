@@ -8,6 +8,7 @@ import 'package:whatsapp_status_saver/domain/entities/status_item.dart';
 import 'package:whatsapp_status_saver/presentation/common/buttons/keep_button.dart';
 import 'package:whatsapp_status_saver/presentation/common/buttons/primary_button.dart';
 import 'package:whatsapp_status_saver/presentation/common/buttons/secondary_button.dart';
+import 'package:whatsapp_status_saver/presentation/common/media/freshness_label.dart';
 import 'package:whatsapp_status_saver/presentation/common/media/video_badge.dart';
 import 'package:whatsapp_status_saver/presentation/common/onboarding/permission_guide.dart';
 import 'package:whatsapp_status_saver/presentation/common/sheets/bottom_sheet.dart';
@@ -97,25 +98,24 @@ void main() {
       expect(wasCalled, isFalse);
     });
 
-    testWidgets(
-      'KeepButton preserves 48x48dp hit target while visual affordance is 32dp',
-      (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: KeevaTheme.darkTheme,
-            home: Scaffold(
-              body: Center(
-                child: KeepButton(state: KeepState.idle, onPressed: () {}),
-              ),
+    testWidgets('card Save action preserves a 48dp touch target', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: KeevaTheme.darkTheme,
+          home: Scaffold(
+            body: Center(
+              child: KeepButton(state: KeepState.idle, onPressed: () {}),
             ),
           ),
-        );
+        ),
+      );
 
-        final keepButtonSize = tester.getSize(find.byType(KeepButton));
-        expect(keepButtonSize.width, greaterThanOrEqualTo(48.0));
-        expect(keepButtonSize.height, greaterThanOrEqualTo(48.0));
-      },
-    );
+      final keepButtonSize = tester.getSize(find.byType(KeepButton));
+      expect(keepButtonSize.width, greaterThanOrEqualTo(48.0));
+      expect(keepButtonSize.height, greaterThanOrEqualTo(48.0));
+    });
   });
 
   group('Phase 2F Hardening: 200% Dynamic Text Scaling', () {
@@ -208,6 +208,50 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byType(StatusCard), findsOneWidget);
     });
+
+    for (final state in [
+      KeepState.idle,
+      KeepState.saving,
+      KeepState.alreadyKept,
+    ]) {
+      testWidgets('compact StatusCard keeps freshness readable at 200% scale '
+          'while ${state.name}', (tester) async {
+        await tester.pumpWidget(
+          buildScaledApp(
+            SizedBox(
+              width: 140,
+              height: 250,
+              child: StatusCard(
+                item: sampleItem,
+                keepState: state,
+                onTap: () {},
+                onKeep: () {},
+              ),
+            ),
+            textScale: 2.0,
+          ),
+        );
+        await tester.pump();
+
+        expect(tester.takeException(), isNull);
+        expect(find.byType(FreshnessLabel), findsOneWidget);
+        expect(
+          tester.getSize(find.byType(FreshnessLabel)).width,
+          greaterThan(100),
+        );
+        expect(
+          find.descendant(
+            of: find.byType(KeepButton),
+            matching: find.text(switch (state) {
+              KeepState.saving => 'Saving',
+              KeepState.alreadyKept => 'Saved',
+              _ => 'Save',
+            }),
+          ),
+          findsOneWidget,
+        );
+      });
+    }
 
     testWidgets(
       'PermissionGuide wraps text cleanly without overflow at 200% text scale',
