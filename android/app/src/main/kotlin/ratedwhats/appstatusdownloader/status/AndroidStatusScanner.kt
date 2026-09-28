@@ -30,7 +30,7 @@ class AndroidStatusScanner(
 ) : MethodChannel.MethodCallHandler {
 
     companion object {
-        const val CHANNEL_NAME = "com.example.whatsapp_status_saver/scanner"
+        const val CHANNEL_NAME = "ratedwhats.appstatusdownloader/scanner"
         private const val TAG = "AndroidStatusScanner"
     }
 
@@ -253,7 +253,7 @@ class AndroidStatusScanner(
                 }
 
                 if (saveResult.success) {
-                    val savedPrefs = activity.getSharedPreferences("keeva_saved_status", Context.MODE_PRIVATE)
+                    val savedPrefs = activity.getSharedPreferences("wa_status_downloader_saved_status", Context.MODE_PRIVATE)
                     savedPrefs.edit()
                         .putBoolean(id, true)
                         .putBoolean(displayName, true)

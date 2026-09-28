@@ -43,7 +43,7 @@
   <rect width="600" height="500" rx="32" fill="url(#wBg)"/>
   <rect width="600" height="500" fill="url(#wGlow)"/>
 
-  <!-- Protective Keeva Vault Frame at Base -->
+  <!-- Protective media frame at the base -->
   <g transform="translate(180, 240)">
     <rect width="240" height="200" rx="28" fill="#141822" stroke="url(#cardBorder)" stroke-width="2"/>
     <!-- Gentle Inward Aperture Light Line -->

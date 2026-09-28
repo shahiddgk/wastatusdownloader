@@ -16,23 +16,23 @@ import '../presentation/shell/app_shell.dart';
 import '../presentation/viewer/media_viewer_screen.dart';
 import 'theme/app_theme.dart';
 
-enum KeevaThemeChoice { system, light, dark }
+enum AppThemeChoice { system, light, dark }
 
-/// Top-level application widget for Keeva.
+/// Top-level application widget for WA Status Downloader.
 ///
 /// Implements the complete production application flow:
 /// - Verifies SAF access on startup via [accessNotifierProvider].
 /// - Displays 3-step [PermissionOnboardingScreen] if access has not been granted.
 /// - Transitions to [AppShell] hosting Moments, Kept Vault, and Settings once granted.
 /// - Manages full-screen [MediaViewerScreen] transitions with 300ms smooth transition.
-class KeevaApp extends ConsumerStatefulWidget {
-  const KeevaApp({super.key});
+class StatusSaverApp extends ConsumerStatefulWidget {
+  const StatusSaverApp({super.key});
 
   @override
-  ConsumerState<KeevaApp> createState() => _KeevaAppState();
+  ConsumerState<StatusSaverApp> createState() => _StatusSaverAppState();
 }
 
-class _KeevaAppState extends ConsumerState<KeevaApp>
+class _StatusSaverAppState extends ConsumerState<StatusSaverApp>
     with WidgetsBindingObserver {
   NavDestination _activeDestination = NavDestination.moments;
   bool _hasShownMainShell = false;
@@ -214,8 +214,8 @@ class _KeevaAppState extends ConsumerState<KeevaApp>
       navigatorKey: _navigatorKey,
       title: 'WA Status Downloader',
       debugShowCheckedModeBanner: false,
-      theme: KeevaTheme.lightTheme,
-      darkTheme: KeevaTheme.darkTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: _themeMode,
       home: content,
     );

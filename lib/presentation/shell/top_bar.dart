@@ -9,10 +9,10 @@ import 'package:whatsapp_status_saver/presentation/common/sheets/bottom_sheet.da
 
 enum TopBarVariant { brand, contextual, selection }
 
-/// Primary application header for Keeva.
+/// Primary application header for WA Status Downloader.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.2:
-/// - BrandHeader: Keeva wordmark + "Private" trust pill.
+/// Implements specification from docs/design/app-component-spec.md Section 2.2:
+/// - BrandHeader: app name + "Private" trust pill.
 /// - ContextualHeader: Back button + title + optional actions.
 /// - SelectionHeader: Active count ("3 selected") + batch actions.
 /// - 48x48dp minimum touch targets on all interactive items.
@@ -54,8 +54,8 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
 
   void _showPrivacySheet(BuildContext context) {
     HapticFeedback.lightImpact();
-    final colors = KeevaTheme.colorsOf(context);
-    KeevaBottomSheet.show(
+    final colors = AppTheme.colorsOf(context);
+    AppBottomSheet.show(
       context: context,
       builder: (context) {
         return Padding(
@@ -92,7 +92,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               const SizedBox(height: AppSpacing.space16),
               Text(
-                'Keeva operates 100% locally on your device. It requires zero internet permissions, connects strictly to your selected WhatsApp folder via Android Storage Access Framework, and never uploads or logs your media.',
+                'WA Status Downloader scans WhatsApp status folders and its saved albums on your device. On newer Android versions, this requires the system\'s all-files access setting. The app has no internet permission and never uploads media.',
                 style: AppTypography.bodyMedium.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                   height: 1.5,
@@ -123,7 +123,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _buildPrivacyPill(BuildContext context) {
-    final colors = KeevaTheme.colorsOf(context);
+    final colors = AppTheme.colorsOf(context);
     return Semantics(
       button: true,
       label: 'Privacy Information. 100% on-device storage guarantee.',
@@ -170,7 +170,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = KeevaTheme.colorsOf(context);
+    final colors = AppTheme.colorsOf(context);
     return AppBar(
       backgroundColor: colors.surfaceLevel0,
       elevation: 0,

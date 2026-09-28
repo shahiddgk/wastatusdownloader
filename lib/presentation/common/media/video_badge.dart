@@ -10,7 +10,7 @@ import 'duration_label.dart';
 
 /// Pill badge overlay for video items displaying duration.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.9:
+/// Implements specification from docs/design/app-component-spec.md Section 2.9:
 /// - Height: 20dp, Radius: 4dp
 /// - Background: rgba(0, 0, 0, 0.65)
 /// - Icon: play_arrow (12dp), tabular font

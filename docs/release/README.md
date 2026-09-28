@@ -1,37 +1,20 @@
-# Keeva Release Engineering
+# WA Status Downloader release engineering
 
-**Product:** Keeva
-**Application ID:** `io.nishvanta.keeva`
-**Namespace:** `io.nishvanta.keeva`
-**Developer:** Nishvanta Labs (*Technology You Can Trust.*)
+**Product:** WA Status Downloader  
+**Android launcher label:** WA Saver  
+**Android application ID:** `ratedwhats.appstatusdownloader`  
 **License:** Apache-2.0
 
----
+The current Android build is intended for direct APK installation. It uses the user-granted All files access permission for automatic status discovery, as recorded in [decision 007](../decisions/007-permission-only-status-access.md). This build is not approved for Google Play distribution. A Play release needs a separately reviewed storage strategy and permission policy check.
 
-## 1. Overview
+Ordinary pushes and pull requests run validation only. A maintainer must manually request publication and provide the Android signing secrets described in [signing.md](signing.md). Never publish an APK signed with a debug key.
 
-This directory documents the release engineering foundation, versioning semantics, signing architecture, distribution readiness, and production verification procedures for Keeva.
-
-Keeva is engineered as an Android-first, local-first Flutter application designed for private WhatsApp status media browsing and preservation.
-
----
-
-## 2. Release Engineering Specifications
-
-| Document | Description |
-| :--- | :--- |
-| [versioning.md](versioning.md) | Automated Semantic Versioning (SemVer), Conventional Commits, and monotonic build rules. |
-| [github-releases.md](github-releases.md) | Automated GitHub Releases pipeline, release assets, dry-run, and loop safety. |
-| [versioning-policy.md](versioning-policy.md) | Canonical rules governing `versionName` (SemVer) and `versionCode` (monotonic sequence). |
-| [signing.md](signing.md) | Secure signing architecture, Google Play App Signing, and zero-secret repository security. |
-| [release-checklist.md](release-checklist.md) | Comprehensive step-by-step checklist required before cutting any production distribution. |
-| [android-developer-verification.md](android-developer-verification.md) | Maintainer guidelines for Google Play Developer verification and package-name ownership. |
-
----
-
-## 3. Core Principles
-
-1. **Zero Secret Persistence:** Private keys, keystores, and passwords must never be committed to Git. Local builds utilize untracked properties (`android/key.properties`) with automatic fallback to debug signing for open-source contributors and local tests.
-2. **Deterministic & Reproducible Builds:** Release artifacts are produced using standardized Flutter and Gradle toolchains with verified dependencies.
-3. **No Unnecessary Permissions:** The release manifest declares strictly zero unnecessary permissions (`INTERNET` and `MANAGE_EXTERNAL_STORAGE` are absent in production builds).
-4. **Platform Compliance:** Full compliance with Android Scoped Storage, Storage Access Framework (SAF), and Android 12+ VectorDrawable splash specifications.
+| Document | Purpose |
+| --- | --- |
+| [github-releases.md](github-releases.md) | Manual publication gate and release assets |
+| [signing.md](signing.md) | Android signing and secret handling |
+| [release-checklist.md](release-checklist.md) | Checks before direct APK distribution |
+| [versioning.md](versioning.md) | Release calculation and Conventional Commits |
+| [versioning-policy.md](versioning-policy.md) | Version and build number rules |
+| [release-strategy.md](release-strategy.md) | Current and future distribution channels |
+| [android-developer-verification.md](android-developer-verification.md) | Package ownership and store prerequisites |

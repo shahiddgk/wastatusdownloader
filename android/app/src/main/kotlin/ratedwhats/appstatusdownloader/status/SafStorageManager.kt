@@ -49,7 +49,7 @@ class SafStorageManager(private val context: Context) {
         private const val TAG = "SafStorageManager"
         const val WHATSAPP_STANDARD = "com.whatsapp"
         const val WHATSAPP_BUSINESS = "com.whatsapp.w4b"
-        private const val PREFS_NAME = "keeva_storage_prefs"
+        private const val PREFS_NAME = "wa_status_downloader_storage_prefs"
         private const val EXTERNAL_STORAGE_PROVIDER = "com.android.externalstorage.documents"
     }
 

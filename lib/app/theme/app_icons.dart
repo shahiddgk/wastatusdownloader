@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Semantic iconography tokens for Keeva using Material Symbols / Icons Rounded.
+/// Semantic iconography tokens for WA Status Downloader using Material Symbols / Icons Rounded.
 ///
-/// Implements canonical semantic icon map from docs/design/keeva-design-system.md Section 8.
+/// Implements canonical semantic icon map from docs/design/app-design-system.md Section 8.
 abstract final class AppIcons {
   // Primary Navigation
   static const IconData navMoments = Icons.auto_awesome_motion_rounded;

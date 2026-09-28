@@ -6,7 +6,7 @@ import 'package:whatsapp_status_saver/app/theme/app_theme.dart';
 
 /// Section header displaying chronological title and count subtitle.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.20.
+/// Implements specification from docs/design/app-component-spec.md Section 2.20.
 class SectionHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -15,7 +15,7 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = KeevaTheme.colorsOf(context);
+    final colors = AppTheme.colorsOf(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space16),
       child: Column(

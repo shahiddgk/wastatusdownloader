@@ -20,7 +20,7 @@ import 'package:whatsapp_status_saver/presentation/common/onboarding/permission_
 void main() {
   Widget buildTestable(Widget child) {
     return MaterialApp(
-      theme: KeevaTheme.darkTheme,
+      theme: AppTheme.darkTheme,
       home: Scaffold(body: child),
     );
   }

@@ -87,7 +87,7 @@ void main() {
         if (mockStatusListNotifier != null)
           statusListNotifierProvider.overrideWith(() => mockStatusListNotifier),
       ],
-      child: MaterialApp(theme: KeevaTheme.darkTheme, home: child),
+      child: MaterialApp(theme: AppTheme.darkTheme, home: child),
     );
   }
 
@@ -204,7 +204,7 @@ void main() {
                 savedStatusesProvider.overrideWith((ref) async => [savedImage]),
               ],
               child: MaterialApp(
-                theme: KeevaTheme.darkTheme,
+                theme: AppTheme.darkTheme,
                 home: const KeptVaultScreen(),
               ),
             ),

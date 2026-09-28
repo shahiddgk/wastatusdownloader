@@ -14,7 +14,7 @@ import 'status_card.dart';
 
 /// High-performance, edge-aware scrolling grid holding [StatusCard] elements.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.8:
+/// Implements specification from docs/design/app-component-spec.md Section 2.8:
 /// - Responsive columns: 2 (<600dp), 3 (600-839dp), 4 (840-1199dp), 5 (>=1200dp).
 /// - 8dp grid spacing between cards (`AppSpacing.space8`).
 /// - Cache extent 500dp for seamless 120fps scrolling.
@@ -28,7 +28,6 @@ class StatusGrid extends StatelessWidget {
   final ValueChanged<StatusItem>? onAlreadyKeptStatus;
   final KeepState Function(StatusItem)? keepStateResolver;
   final Future<String?> Function(StatusItem)? thumbnailLoader;
-  final Widget Function(StatusItem)? contactLabelBuilder;
   final bool isLoading;
   final EmptyScenario emptyScenario;
   final VoidCallback? onEmptyAction;
@@ -46,7 +45,6 @@ class StatusGrid extends StatelessWidget {
     this.onAlreadyKeptStatus,
     this.keepStateResolver,
     this.thumbnailLoader,
-    this.contactLabelBuilder,
     this.isLoading = false,
     this.emptyScenario = EmptyScenario.noStatuses,
     this.onEmptyAction,
@@ -134,7 +132,6 @@ class StatusGrid extends StatelessWidget {
                   keepStateResolver?.call(item) ??
                   (item.isSaved ? KeepState.alreadyKept : KeepState.idle),
               thumbnailLoader: thumbnailLoader,
-              contactLabel: contactLabelBuilder?.call(item),
             );
 
             return _StaggeredGridCard(

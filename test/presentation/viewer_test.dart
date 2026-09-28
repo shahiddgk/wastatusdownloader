@@ -94,7 +94,7 @@ void main() {
           statusRepositoryProvider.overrideWithValue(mockStatusRepository),
       ],
       child: MaterialApp(
-        theme: KeevaTheme.darkTheme,
+        theme: AppTheme.darkTheme,
         home: MediaViewerScreen(
           item: item,
           onDismiss: onDismiss,

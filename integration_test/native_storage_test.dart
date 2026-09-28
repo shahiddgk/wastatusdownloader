@@ -39,7 +39,7 @@ void main() {
     try {
       await photo.parent.create(recursive: true);
       await business.parent.create(recursive: true);
-      final bytes = (await rootBundle.load('assets/icon/app_icon_512.png'))
+      final bytes = (await rootBundle.load('assets/icon/status_icon_512.png'))
           .buffer
           .asUint8List();
       await photo.writeAsBytes(bytes);

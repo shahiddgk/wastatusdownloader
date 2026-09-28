@@ -11,7 +11,7 @@ enum MediaFilter { all, photos, videos }
 
 /// Filter chips row for toggling media types.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.21:
+/// Implements specification from docs/design/app-component-spec.md Section 2.21:
 /// - Guarantees 48dp touch height while maintaining 32dp visual height.
 /// - Tabular figures on item count.
 /// - Horizontally scrollable to support 200% text scale without overflow.
@@ -33,7 +33,7 @@ class FilterControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = KeevaTheme.colorsOf(context);
+    final colors = AppTheme.colorsOf(context);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space16),
@@ -69,7 +69,7 @@ class FilterControl extends StatelessWidget {
 
   Widget _buildChip({
     required BuildContext context,
-    required KeevaColorsExtension colors,
+    required AppColorsExtension colors,
     required MediaFilter filter,
     required String label,
     required bool isSelected,

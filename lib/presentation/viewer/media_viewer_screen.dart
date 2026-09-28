@@ -14,7 +14,6 @@ import '../../application/providers.dart';
 import '../../application/saver/save_state.dart';
 import '../../application/viewer/viewer_state.dart';
 import '../../domain/entities/status_item.dart';
-import '../../features/status_labels/presentation/status_contact_label.dart';
 import '../../core/constants/app_constants.dart';
 import '../common/buttons/keep_button.dart';
 import '../common/feedback/error_state.dart';
@@ -23,11 +22,11 @@ import '../common/feedback/toast.dart';
 import '../common/media/freshness_label.dart';
 import '../common/media/media_placeholder.dart';
 import '../common/sheets/bottom_sheet.dart';
-import 'keeva_video_player.dart';
+import 'status_video_player.dart';
 
 /// Screen D: Full Media Viewer (Immersive Shell).
 ///
-/// Implements specification from docs/design/keeva-ui-spec.md Section Screen D:
+/// Implements specification from docs/design/app-ui-spec.md Section Screen D:
 /// - Pitch black canvas (#000000) for edge-to-edge optical clarity.
 /// - Top floating chrome with back navigation and timestamp.
 /// - Single-tap anywhere toggles top and bottom chrome visibility.
@@ -172,7 +171,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen>
         .split('.')
         .first;
 
-    KeevaBottomSheet.show(
+    AppBottomSheet.show(
       context: context,
       builder: (context) {
         return Padding(
@@ -239,13 +238,13 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen>
     // Save toast notifications
     ref.listen<SaveState>(saveNotifierProvider, (previous, next) {
       if (next is SaveSuccess && previous is! SaveSuccess) {
-        KeevaToast.show(
+        AppToast.show(
           context,
           message: 'Saved to gallery',
           icon: AppIcons.actionCheck,
         );
       } else if (next is SaveFailure && previous is! SaveFailure) {
-        KeevaToast.show(
+        AppToast.show(
           context,
           message: next.failure.message,
           icon: AppIcons.errorWarning,
@@ -328,7 +327,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen>
                           children: [
                             if (widget.item.isVideo &&
                                 activeVideoPath != null) ...[
-                              KeevaVideoPlayer(
+                              StatusVideoPlayer(
                                 videoPath: activeVideoPath,
                                 showChrome: _showChrome,
                                 onToggleChrome: _toggleChrome,
@@ -427,10 +426,6 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen>
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        StatusContactLabel(
-                          statusId: widget.item.id,
-                          style: StatusContactLabelStyle.viewer,
-                        ),
                         Text(
                           FreshnessLabel.formatFreshness(
                             widget.item.lastModified,
@@ -504,7 +499,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen>
                             isVideo: widget.item.isVideo,
                           );
                           if (context.mounted && result.isFailure) {
-                            KeevaToast.show(
+                            AppToast.show(
                               context,
                               message:
                                   result.failureOrNull?.message ??
@@ -536,7 +531,7 @@ class _MediaViewerScreenState extends ConsumerState<MediaViewerScreen>
                           .read(saveNotifierProvider.notifier)
                           .save(widget.item),
                       onAlreadyKeptPressed: () {
-                        KeevaBottomSheet.showAlreadyKeptOptions(
+                        AppBottomSheet.showAlreadyKeptOptions(
                           context: context,
                           item: widget.item,
                           onViewInVault: () {

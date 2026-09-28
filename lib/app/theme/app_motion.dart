@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Motion easing curves, duration tokens, and accessibility motion helpers.
 ///
-/// Implements tokens and curves from docs/design/keeva-motion-spec.md.
+/// Implements tokens and curves from docs/design/app-motion-spec.md.
 abstract final class AppMotion {
   // ===========================================================================
   // EASING CURVES

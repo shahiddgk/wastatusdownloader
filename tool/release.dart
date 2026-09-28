@@ -1,6 +1,6 @@
 import 'dart:io';
 
-/// Release CLI tool for Keeva.
+/// Release CLI tool for WA Status Downloader.
 ///
 /// Implements:
 /// - Semantic version determination via Conventional Commits
@@ -47,7 +47,7 @@ void main(List<String> args) async {
 
 void _printUsage() {
   stdout.writeln('''
-Keeva Release Automation Tool
+WA Status Downloader Release Automation Tool
 
 Usage:
   dart run tool/release.dart <command> [options]
@@ -713,7 +713,7 @@ String generateReleaseNotes({
   bool iosAvailable = false,
 }) {
   final buffer = StringBuffer();
-  buffer.writeln('# Keeva $tag');
+  buffer.writeln('# WA Status Downloader $tag');
   buffer.writeln();
   buffer.writeln('## Release type');
   buffer.writeln(releaseType);
@@ -728,10 +728,10 @@ String generateReleaseNotes({
   }
   buffer.writeln();
   buffer.writeln('## Downloads');
-  buffer.writeln('- Android APK: `Keeva-$tag-Android.apk`');
-  buffer.writeln('- Android AAB: `Keeva-$tag-Android.aab`');
+  buffer.writeln('- Android APK: `WA-Status-Downloader-$tag-Android.apk`');
+  buffer.writeln('- Android AAB: `WA-Status-Downloader-$tag-Android.aab`');
   if (iosAvailable) {
-    buffer.writeln('- iOS IPA: `Keeva-$tag-iOS.ipa`');
+    buffer.writeln('- iOS IPA: `WA-Status-Downloader-$tag-iOS.ipa`');
   } else {
     buffer.writeln(
       '- iOS: Not distributed via direct IPA (signing configuration pending / distributed via TestFlight).',

@@ -41,12 +41,12 @@ class NavItem {
 /// Adaptive navigation controller rendering BottomNav on phones (< 600dp)
 /// and NavigationRail on tablets (>= 600dp).
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.3.
-class KeevaBottomNavBar extends StatelessWidget {
+/// Implements specification from docs/design/app-component-spec.md Section 2.3.
+class AppBottomNavBar extends StatelessWidget {
   final NavDestination activeDestination;
   final ValueChanged<NavDestination> onDestinationSelected;
 
-  const KeevaBottomNavBar({
+  const AppBottomNavBar({
     super.key,
     required this.activeDestination,
     required this.onDestinationSelected,
@@ -54,7 +54,7 @@ class KeevaBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = KeevaTheme.colorsOf(context);
+    final colors = AppTheme.colorsOf(context);
     return NavigationBar(
       selectedIndex: activeDestination.index,
       onDestinationSelected: (index) {
@@ -82,12 +82,12 @@ class KeevaBottomNavBar extends StatelessWidget {
   }
 }
 
-class KeevaNavRail extends StatelessWidget {
+class AppNavRail extends StatelessWidget {
   final NavDestination activeDestination;
   final ValueChanged<NavDestination> onDestinationSelected;
   final bool isExpanded;
 
-  const KeevaNavRail({
+  const AppNavRail({
     super.key,
     required this.activeDestination,
     required this.onDestinationSelected,
@@ -96,7 +96,7 @@ class KeevaNavRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = KeevaTheme.colorsOf(context);
+    final colors = AppTheme.colorsOf(context);
     return NavigationRail(
       selectedIndex: activeDestination.index,
       onDestinationSelected: (index) {

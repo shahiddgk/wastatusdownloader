@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Design tokens for Keeva color palette.
+/// Design tokens for WA Status Downloader color palette.
 ///
 /// Implements the approved "Quiet Obsidian + Aurora Mint" dark palette
-/// and "Crisp Editorial" light palette from docs/design/keeva-design-system.md.
+/// and "Crisp Editorial" light palette from docs/design/app-design-system.md.
 abstract final class AppColors {
   // ===========================================================================
   // DARK PALETTE (Quiet Obsidian - Default)
@@ -126,9 +126,9 @@ abstract final class AppColors {
   );
 }
 
-/// Theme extension exposing Keeva-specific semantic color tokens.
+/// Theme extension exposing WA Status Downloader-specific semantic color tokens.
 @immutable
-class KeevaColorsExtension extends ThemeExtension<KeevaColorsExtension> {
+class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
   final Color surfaceLevel0;
   final Color surfaceLevel1;
   final Color surfaceLevel2;
@@ -143,7 +143,7 @@ class KeevaColorsExtension extends ThemeExtension<KeevaColorsExtension> {
   final Color borderSheet;
   final Color scrim;
 
-  const KeevaColorsExtension({
+  const AppColorsExtension({
     required this.surfaceLevel0,
     required this.surfaceLevel1,
     required this.surfaceLevel2,
@@ -160,7 +160,7 @@ class KeevaColorsExtension extends ThemeExtension<KeevaColorsExtension> {
   });
 
   /// Default dark theme extension instance.
-  static const dark = KeevaColorsExtension(
+  static const dark = AppColorsExtension(
     surfaceLevel0: AppColors.darkSurfaceLevel0,
     surfaceLevel1: AppColors.darkSurfaceLevel1,
     surfaceLevel2: AppColors.darkSurfaceLevel2,
@@ -177,7 +177,7 @@ class KeevaColorsExtension extends ThemeExtension<KeevaColorsExtension> {
   );
 
   /// Default light theme extension instance.
-  static const light = KeevaColorsExtension(
+  static const light = AppColorsExtension(
     surfaceLevel0: AppColors.lightSurfaceLevel0,
     surfaceLevel1: AppColors.lightSurfaceLevel1,
     surfaceLevel2: AppColors.lightSurfaceLevel2,
@@ -194,7 +194,7 @@ class KeevaColorsExtension extends ThemeExtension<KeevaColorsExtension> {
   );
 
   @override
-  KeevaColorsExtension copyWith({
+  AppColorsExtension copyWith({
     Color? surfaceLevel0,
     Color? surfaceLevel1,
     Color? surfaceLevel2,
@@ -209,7 +209,7 @@ class KeevaColorsExtension extends ThemeExtension<KeevaColorsExtension> {
     Color? borderSheet,
     Color? scrim,
   }) {
-    return KeevaColorsExtension(
+    return AppColorsExtension(
       surfaceLevel0: surfaceLevel0 ?? this.surfaceLevel0,
       surfaceLevel1: surfaceLevel1 ?? this.surfaceLevel1,
       surfaceLevel2: surfaceLevel2 ?? this.surfaceLevel2,
@@ -227,14 +227,14 @@ class KeevaColorsExtension extends ThemeExtension<KeevaColorsExtension> {
   }
 
   @override
-  ThemeExtension<KeevaColorsExtension> lerp(
-    covariant ThemeExtension<KeevaColorsExtension>? other,
+  ThemeExtension<AppColorsExtension> lerp(
+    covariant ThemeExtension<AppColorsExtension>? other,
     double t,
   ) {
-    if (other is! KeevaColorsExtension) {
+    if (other is! AppColorsExtension) {
       return this;
     }
-    return KeevaColorsExtension(
+    return AppColorsExtension(
       surfaceLevel0: Color.lerp(surfaceLevel0, other.surfaceLevel0, t)!,
       surfaceLevel1: Color.lerp(surfaceLevel1, other.surfaceLevel1, t)!,
       surfaceLevel2: Color.lerp(surfaceLevel2, other.surfaceLevel2, t)!,

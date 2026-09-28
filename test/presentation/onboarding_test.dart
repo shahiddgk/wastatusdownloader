@@ -37,7 +37,7 @@ void main() {
     return ProviderScope(
       overrides: [accessNotifierProvider.overrideWith(() => mockNotifier)],
       child: MaterialApp(
-        theme: KeevaTheme.darkTheme,
+        theme: AppTheme.darkTheme,
         home: PermissionOnboardingScreen(onAccessGranted: onAccessGranted),
       ),
     );

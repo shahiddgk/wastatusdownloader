@@ -1,7 +1,7 @@
 /// Constants for platform channel communication with the Android native status subsystem.
 abstract final class ChannelConstants {
   /// The primary MethodChannel identifier for status operations.
-  static const String channelName = 'com.example.whatsapp_status_saver/scanner';
+  static const String channelName = 'ratedwhats.appstatusdownloader/scanner';
 
   // --- Production Method Names ---
   static const String methodCheckFolderAccess = 'checkFolderAccess';

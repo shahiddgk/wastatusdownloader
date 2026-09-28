@@ -91,7 +91,7 @@ class _KeptVaultScreenState extends ConsumerState<KeptVaultScreen> {
                   await ref.read(savedStatusesProvider.future);
                 } catch (_) {
                   if (context.mounted) {
-                    KeevaToast.show(
+                    AppToast.show(
                       context,
                       message: 'Could not refresh saved statuses.',
                     );

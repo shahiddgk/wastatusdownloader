@@ -1,33 +1,23 @@
 # Security Policy
 
-## Supported Versions
+## Supported versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| main    | :white_check_mark: |
+The `main` branch and the latest published release receive security fixes.
 
----
+## Security and privacy model
 
-## Security Architecture & Design
+WA Status Downloader processes status media locally.
 
-Keeva is engineered around a privacy-preserving, local-first mobile architecture:
+- The Android manifest does not declare `android.permission.INTERNET`.
+- The app includes no advertising, analytics, or remote crash reporting SDK.
+- The direct-install Android build requests `MANAGE_EXTERNAL_STORAGE` on Android 11 and newer. The scanner limits its own work to known WhatsApp status locations and the app's saved-media locations.
+- Android 10 and older supported versions use scoped legacy read and write permissions.
+- Saved media is written through MediaStore.
+- Platform paths stay inside the native Android layer; Flutter receives opaque media identifiers.
+- Original status files are not deleted or modified.
 
-- **Local-First On-Device Execution**: Keeva does not declare internet permissions in its Android manifest (`android.permission.INTERNET` is absent) and performs no outbound network requests. Media discovery, preview caching, and saving operate strictly on the local device without external server dependencies.
-- **No Intentional Telemetry**: The application includes no third-party analytics libraries, advertising SDKs, crash beacons, or remote tracking instrumentation.
-- **Storage Access Framework (SAF)**: Keeva does not request or require broad storage manager permissions (`MANAGE_EXTERNAL_STORAGE`). File and directory access is limited strictly to the location explicitly chosen and authorized by the user via Android's native system picker (`ACTION_OPEN_DOCUMENT_TREE`).
-- **MediaStore Export**: Kept media is saved to standard public collections (`Pictures/SavedStatus`, `Movies/SavedStatus`) via scoped Android MediaStore APIs without requesting broad legacy storage permissions.
-- **Opaque Identifiers**: Storage URIs and raw filesystem paths remain encapsulated within the native Android service layer; Flutter presentation widgets interact only with opaque identifiers.
+Android's All files access grant is broad at the operating-system level. Users can revoke it from Android App Info at any time.
 
+## Reporting a vulnerability
 
----
-
-## Reporting a Vulnerability
-
-If you discover a security vulnerability in Keeva, please report it responsibly:
-
-1. **Do NOT open a public GitHub issue.**
-2. Send a detailed report describing the vulnerability, affected components, and steps to reproduce to the repository maintainers via GitHub Security Advisories or the security contact email specified in the repository profile.
-3. Allow reasonable time for investigation and resolution before public disclosure.
-
-We take security seriously and appreciate your cooperation in keeping Keeva safe for all users.
+Report security issues privately through the repository's GitHub Security Advisory page or the maintainer contact listed in the repository profile. Include affected versions, reproduction steps, and impact. Do not include private user media in the report.

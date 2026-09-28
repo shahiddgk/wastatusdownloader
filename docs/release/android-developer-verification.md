@@ -1,54 +1,19 @@
-# Android Developer Verification & Distribution Readiness
+# Android distribution readiness
 
-**Package:** `io.nishvanta.keeva`
-**Developer:** Nishvanta Labs
-**Target Channel:** Google Play / F-Droid / GitHub Releases
+**Package:** `ratedwhats.appstatusdownloader`
 
----
+The maintainer must register this exact package in any target store and complete the store's current identity, contact, tax, and policy requirements.
 
-## 1. Overview
+## Direct APK distribution
 
-Android app distribution requirements and Google Play policies require comprehensive developer identity verification, organization validation, and package ownership safeguards.
+Publish only release-signed APKs. Provide a SHA-256 checksum and retain an encrypted backup of the upload keystore and credentials. Verify the signature, package ID, version, label, and permissions from the final APK.
 
-This document outlines the developer verification considerations and prerequisites that the maintainer must complete before public distribution.
+## Google Play
 
----
+The current build declares `MANAGE_EXTERNAL_STORAGE`. Google Play restricts All files access and requires an eligible core use case plus an approved declaration. Package registration or a successful AAB build does not establish policy eligibility.
 
-## 2. Package Identity Verification
+If Play App Signing is enabled, register the public certificate for the `upload` key and keep the private key outside the repository.
 
-### 2.1 Package Name Ownership
-- **Application ID:** `io.nishvanta.keeva`
-- **Domain Association:** `keeva.nishvanta.io` / `nishvanta.io`
-- For Google Play distribution, the package name `io.nishvanta.keeva` must be registered under the official **Nishvanta Labs** Google Play Developer Console account.
-- Maintainers must ensure that no third-party entity claims or squatted the package name in targeted distribution stores prior to initial release.
+## Repository boundaries
 
-### 2.2 Developer Identity Verification (Google Play Policies)
-Under Google Play's developer identity requirements:
-1. **Organization Verification:** The developer organization (Nishvanta Labs) must provide official registration documents, D-U-N-S (Data Universal Numbering System) number, verified business address, and contact information.
-2. **Payment & Tax Verification:** Maintainer must complete merchant/tax verification profiles if applicable.
-3. **Contact Email & Phone:** Publicly visible developer support email and phone numbers must be validated through two-factor authentication.
-4. **App Privacy Declarations:**
-   - Target audience declarations (age groups).
-   - Data Safety Section: Keeva declares **Zero Data Collected** and **Zero Data Shared with Third Parties**.
-   - Permissions declaration: No dangerous permissions (`MANAGE_EXTERNAL_STORAGE`, `READ_MEDIA_*`, or `INTERNET` are declared).
-
----
-
-## 3. Alternative Distribution Channels
-
-### 3.1 F-Droid / Open Source Catalog
-- Because Keeva is licensed under the **Apache-2.0** license with zero proprietary dependencies and zero telemetry, it is fully eligible for inclusion in F-Droid.
-- Build recipes can build Keeva directly from the upstream Git repository.
-- Reproducible builds must match the official release tags.
-
-### 3.2 Direct APK / GitHub Releases
-- Maintainers can publish signed release APKs directly on GitHub Releases.
-- Standalone release APKs should be accompanied by SHA-256 checksums and PGP signatures.
-
----
-
-## 4. Operational Boundaries
-
-- Automated tooling, AI agents, and CI pipelines **must never** attempt to perform account registration automatically.
-- No personal identity documents or corporate registration certificates may be committed to this repository.
-- Account operations remain the exclusive responsibility of human maintainers.
+Do not commit identity documents, signing secrets, private certificates, service-account credentials, or console exports. Store account creation and policy declarations remain manual maintainer actions.

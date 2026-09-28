@@ -28,7 +28,7 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
-            theme: KeevaTheme.darkTheme,
+            theme: AppTheme.darkTheme,
             home: Scaffold(
               body: Center(
                 child: KeepButton(
@@ -72,13 +72,13 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
-            theme: KeevaTheme.darkTheme,
+            theme: AppTheme.darkTheme,
             home: Scaffold(
               body: Builder(
                 builder: (context) {
                   return ElevatedButton(
                     onPressed: () {
-                      KeevaBottomSheet.showAlreadyKeptOptions(
+                      AppBottomSheet.showAlreadyKeptOptions(
                         context: context,
                         item: sampleItem,
                         onViewInVault: () {
@@ -133,7 +133,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             child: MaterialApp(
-              theme: KeevaTheme.darkTheme,
+              theme: AppTheme.darkTheme,
               home: MediaViewerScreen(
                 item: sampleItem,
                 onShare: (item) async {
@@ -165,7 +165,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             child: MaterialApp(
-              theme: KeevaTheme.darkTheme,
+              theme: AppTheme.darkTheme,
               home: MediaViewerScreen(
                 item: sampleItem, // isSaved = true
                 onNavigateToKept: () {

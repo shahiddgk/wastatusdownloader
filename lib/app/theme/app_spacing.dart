@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Spacing tokens for Keeva based on an 8pt architectural grid with 4pt micro-positioning.
+/// Spacing tokens for WA Status Downloader based on an 8pt architectural grid with 4pt micro-positioning.
 ///
-/// Implements tokens from docs/design/keeva-design-system.md Section 5.
+/// Implements tokens from docs/design/app-design-system.md Section 5.
 abstract final class AppSpacing {
   /// 2dp: Micro gap between badge icon and text.
   static const double space2 = 2.0;

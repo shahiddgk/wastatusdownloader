@@ -9,7 +9,7 @@ import 'package:whatsapp_status_saver/presentation/shell/top_bar.dart';
 void main() {
   Widget buildTestable(Widget child, {Size size = const Size(390, 844)}) {
     return MaterialApp(
-      theme: KeevaTheme.darkTheme,
+      theme: AppTheme.darkTheme,
       home: MediaQuery(
         data: MediaQueryData(size: size),
         child: child,
@@ -37,6 +37,11 @@ void main() {
         await tester.tap(find.text('Private'));
         await tester.pumpAndSettle();
         expect(find.text('Private & Local-First'), findsOneWidget);
+        expect(
+          find.textContaining('system\'s all-files access setting'),
+          findsOneWidget,
+        );
+        expect(find.text('WA Status Downloader'), findsOneWidget);
       });
 
       testWidgets('TopBar.contextual renders back button and title', (
@@ -105,8 +110,8 @@ void main() {
           ),
         );
 
-        expect(find.byType(KeevaBottomNavBar), findsOneWidget);
-        expect(find.byType(KeevaNavRail), findsNothing);
+        expect(find.byType(AppBottomNavBar), findsOneWidget);
+        expect(find.byType(AppNavRail), findsNothing);
         expect(find.text('Body Content'), findsOneWidget);
 
         // Tap Kept tab
@@ -130,8 +135,8 @@ void main() {
           ),
         );
 
-        expect(find.byType(KeevaNavRail), findsOneWidget);
-        expect(find.byType(KeevaBottomNavBar), findsNothing);
+        expect(find.byType(AppNavRail), findsOneWidget);
+        expect(find.byType(AppBottomNavBar), findsNothing);
         expect(find.text('Tablet Content'), findsOneWidget);
 
         // Tap Settings

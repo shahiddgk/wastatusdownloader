@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
-/// Material theme for Keeva's Dark Neon Vault visual system.
+/// Material theme for WA Status Downloader's Dark Neon Vault visual system.
 abstract final class NeonVaultTheme {
   static ThemeData get dark {
     final textTheme = GoogleFonts.interTextTheme(ThemeData.dark().textTheme)

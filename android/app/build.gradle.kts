@@ -7,6 +7,27 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+val hasReleaseKey = if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.inputStream().use(keystoreProperties::load)
+    val storeFilePath = keystoreProperties.getProperty("storeFile")
+    val storeFile = storeFilePath?.let { path ->
+        val candidate = File(path)
+        when {
+            candidate.isAbsolute -> candidate
+            rootProject.file(path).exists() -> rootProject.file(path)
+            else -> project.file(path)
+        }
+    }
+    !keystoreProperties.getProperty("keyAlias").isNullOrBlank() &&
+        !keystoreProperties.getProperty("keyPassword").isNullOrBlank() &&
+        !keystoreProperties.getProperty("storePassword").isNullOrBlank() &&
+        storeFile?.isFile == true
+} else {
+    false
+}
+
 android {
     namespace = "ratedwhats.appstatusdownloader"
     compileSdk = flutter.compileSdkVersion
@@ -31,24 +52,9 @@ android {
         versionName = flutter.versionName
     }
 
-    val keystorePropertiesFile = rootProject.file("key.properties")
-    val keystoreProperties = Properties()
-    val hasReleaseKey = if (keystorePropertiesFile.exists()) {
-        keystorePropertiesFile.inputStream().use { input ->
-            keystoreProperties.load(input)
-        }
-        val keyAlias = keystoreProperties.getProperty("keyAlias")
-        val keyPassword = keystoreProperties.getProperty("keyPassword")
-        val storeFile = keystoreProperties.getProperty("storeFile")
-        val storePassword = keystoreProperties.getProperty("storePassword")
-        !keyAlias.isNullOrBlank() && !keyPassword.isNullOrBlank() && !storeFile.isNullOrBlank() && !storePassword.isNullOrBlank()
-    } else {
-        false
-    }
-
     signingConfigs {
-        create("release") {
-            if (hasReleaseKey) {
+        if (hasReleaseKey) {
+            create("release") {
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
                 val storeFilePath = keystoreProperties.getProperty("storeFile")
@@ -61,34 +67,28 @@ android {
                     file(storeFilePath)
                 }
                 storePassword = keystoreProperties.getProperty("storePassword")
-            } else {
-                // Graceful fallback to debug signing when key.properties is not provisioned.
-                // Ensures local release engineering, testing, and open-source builds succeed.
-                val debugConfig = signingConfigs.getByName("debug")
-                initWith(debugConfig)
-                val debugFile = debugConfig.storeFile
-                if (debugFile != null && !debugFile.exists()) {
-                    debugFile.parentFile?.mkdirs()
-                    ProcessBuilder(
-                        "keytool", "-genkeypair",
-                        "-keystore", debugFile.absolutePath,
-                        "-storepass", "android",
-                        "-alias", "androiddebugkey",
-                        "-keypass", "android",
-                        "-keyalg", "RSA",
-                        "-keysize", "2048",
-                        "-validity", "10000",
-                        "-dname", "CN=Android Debug,O=Android,C=US"
-                    ).redirectErrorStream(true).start().waitFor()
-                }
             }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            if (hasReleaseKey) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
+    }
+}
+
+gradle.taskGraph.whenReady {
+    val requestsReleaseArtifact = allTasks.any { task ->
+        task.project == project && task.name.contains("Release", ignoreCase = true)
+    }
+    if (requestsReleaseArtifact && !hasReleaseKey) {
+        throw GradleException(
+            "Release signing is not configured. Create android/key.properties " +
+                "and point it to the private upload keystore.",
+        )
     }
 }
 

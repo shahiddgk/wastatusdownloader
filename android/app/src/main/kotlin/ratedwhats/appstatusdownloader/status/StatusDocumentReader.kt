@@ -96,7 +96,7 @@ class StatusDocumentReader(private val context: Context) {
     }
 
     private fun registerFiles(files: List<File>, saved: Boolean = false): List<StatusDocument> {
-        val savedPrefs = context.getSharedPreferences("keeva_saved_status", Context.MODE_PRIVATE)
+        val savedPrefs = context.getSharedPreferences("wa_status_downloader_saved_status", Context.MODE_PRIVATE)
         return files.map { file ->
             val mime = requireNotNull(StatusFileCatalog.mimeType(file.name))
             val id = "file_" + ThumbnailManager.getSafeCacheKey(file.canonicalPath)
@@ -123,7 +123,7 @@ class StatusDocumentReader(private val context: Context) {
         val resultList = mutableListOf<StatusDocument>()
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, statusesDocId)
 
-        val savedPrefs = context.getSharedPreferences("keeva_saved_status", Context.MODE_PRIVATE)
+        val savedPrefs = context.getSharedPreferences("wa_status_downloader_saved_status", Context.MODE_PRIVATE)
         val picturesDir = File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_PICTURES), "SavedStatus")
         val moviesDir = File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_MOVIES), "SavedStatus")
 
@@ -289,7 +289,7 @@ class StatusDocumentReader(private val context: Context) {
 
     /**
      * Returns the last persisted tree URI by checking SharedPreferences first
-     * (keeva_storage_prefs / tree_uri_<pkg>) so we don't blindly return the wrong
+     * (wa_status_downloader_storage_prefs / tree_uri_<pkg>) so we don't blindly return the wrong
      * package's URI. Falls back to any persisted tree URI only if prefs is empty.
      *
      * NOTE: This fallback is only used for legacy document URI resolution from cache.
@@ -299,7 +299,7 @@ class StatusDocumentReader(private val context: Context) {
     private fun findPersistedTreeUri(): Uri? {
         return try {
             // Prefer the Standard WhatsApp URI from prefs first, then Business, then any
-            val prefs = context.getSharedPreferences("keeva_storage_prefs", Context.MODE_PRIVATE)
+            val prefs = context.getSharedPreferences("wa_status_downloader_storage_prefs", Context.MODE_PRIVATE)
             val standardUri = prefs.getString("tree_uri_com.whatsapp", null)
             if (standardUri != null) {
                 val uri = Uri.parse(standardUri)

@@ -5,7 +5,7 @@ import 'package:whatsapp_status_saver/app/theme/app_typography.dart';
 
 /// Communicates the relative freshness of temporary status moments.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.11:
+/// Implements specification from docs/design/app-component-spec.md Section 2.11:
 /// - Highlights in amber (#F59E0B) when < 2 hours remain before 24h expiration.
 class FreshnessLabel extends StatelessWidget {
   final DateTime timestamp;

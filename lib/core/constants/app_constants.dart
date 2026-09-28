@@ -1,4 +1,4 @@
-/// Application-wide constants for Keeva.
+/// Application-wide constants for WA Status Downloader.
 ///
 /// Contains only genuine application-wide and platform configuration values.
 /// UI colors, spacing, typography, and animation tokens are reserved for Phase 2E.
@@ -8,7 +8,7 @@ abstract final class AppConstants {
 
   /// Primary MethodChannel identifier for native status discovery and media saving.
   static const String scannerChannelName =
-      'com.example.whatsapp_status_saver/scanner';
+      'ratedwhats.appstatusdownloader/scanner';
 
   /// Android package name for standard WhatsApp.
   static const String whatsappStandardPackage = 'com.whatsapp';

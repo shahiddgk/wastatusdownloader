@@ -1,4 +1,4 @@
-name: Keeva CI & Release
+name: WA Status Downloader CI & Release
 
 on:
   push:
@@ -24,19 +24,26 @@ on:
         required: false
         default: false
         type: boolean
+      publish_release:
+        description: 'Publish a release using configured Android upload signing'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   evaluate-and-tag:
     name: Evaluate Release & Tag
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_release == true
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       should_release: ${{ steps.release-eval.outputs.should_release }}
       tag_name: ${{ steps.release-eval.outputs.tag_name }}
@@ -57,6 +64,18 @@ jobs:
           flutter-version: '3.47.2'
           channel: 'stable'
           cache: true
+
+      - name: Require Android upload signing secrets
+        if: inputs.dry_run != true
+        env:
+          UPLOAD_KEYSTORE_B64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          if [ -z "$UPLOAD_KEYSTORE_B64" ] || [ -z "$UPLOAD_STORE_PASSWORD" ] || [ -z "$UPLOAD_KEY_PASSWORD" ]; then
+            echo "::error::Android upload signing secrets are required before creating a release tag."
+            exit 1
+          fi
 
       - name: Evaluate Release Decision & Create Tag
         id: release-eval
@@ -112,7 +131,7 @@ jobs:
           fi
 
   validate-and-build-android:
-    name: Validation & Android Release Build
+    name: Validation & Android Build
     needs: [evaluate-and-tag]
     if: always() && !cancelled() && (needs.evaluate-and-tag.result == 'success' || needs.evaluate-and-tag.result == 'skipped')
     runs-on: ubuntu-latest
@@ -154,17 +173,17 @@ jobs:
 
       - name: Android Manifest Permission Regression Check
         run: |
-          echo "Verifying absence of sensitive permissions in Android source manifest..."
+          echo "Verifying permissions for the current direct-install Android build..."
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           if grep -q "android.permission.INTERNET" "$MANIFEST"; then
             echo "::error::android.permission.INTERNET declared in $MANIFEST"
             exit 1
           fi
-          if grep -q "android.permission.MANAGE_EXTERNAL_STORAGE" "$MANIFEST"; then
-            echo "::error::android.permission.MANAGE_EXTERNAL_STORAGE declared in $MANIFEST"
+          if ! grep -q "android.permission.MANAGE_EXTERNAL_STORAGE" "$MANIFEST"; then
+            echo "::error::Required direct-storage permission is missing from $MANIFEST"
             exit 1
           fi
-          echo "✓ Zero sensitive permissions in source manifest."
+          echo "✓ Offline policy and direct-install storage permission verified."
 
       - name: Application ID & Namespace Regression Check
         run: |
@@ -239,18 +258,36 @@ jobs:
           cd android
           ./gradlew test
 
-      - name: Ensure Fallback Signing Keystore
+      - name: Configure Android upload signing
+        if: needs.evaluate-and-tag.outputs.should_release == 'true' && needs.evaluate-and-tag.outputs.dry_run != 'true'
+        env:
+          UPLOAD_KEYSTORE_B64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
         run: |
-          mkdir -p "$HOME/.android" "$HOME/.config/.android"
-          if [ ! -f "$HOME/.android/debug.keystore" ]; then
-            keytool -genkeypair -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          if [ -z "$UPLOAD_KEYSTORE_B64" ] || [ -z "$UPLOAD_STORE_PASSWORD" ] || [ -z "$UPLOAD_KEY_PASSWORD" ]; then
+            echo "::error::Android upload signing secrets are not configured."
+            exit 1
           fi
-          cp -f "$HOME/.android/debug.keystore" "$HOME/.config/.android/debug.keystore" 2>/dev/null || true
+          KEYSTORE_PATH="$RUNNER_TEMP/wa-status-downloader-upload.jks"
+          printf '%s' "$UPLOAD_KEYSTORE_B64" | base64 --decode > "$KEYSTORE_PATH"
+          printf '%s\n' \
+            'keyAlias=upload' \
+            "keyPassword=$UPLOAD_KEY_PASSWORD" \
+            "storePassword=$UPLOAD_STORE_PASSWORD" \
+            "storeFile=$KEYSTORE_PATH" > android/key.properties
+          keytool -list -keystore "$KEYSTORE_PATH" -storepass:env UPLOAD_STORE_PASSWORD -alias upload >/dev/null
 
-      - name: Build Release APK
+      - name: Build Debug APK
+        if: needs.evaluate-and-tag.outputs.should_release != 'true' || needs.evaluate-and-tag.outputs.dry_run == 'true'
+        run: flutter build apk --debug
+
+      - name: Build Signed Release APK
+        if: needs.evaluate-and-tag.outputs.should_release == 'true' && needs.evaluate-and-tag.outputs.dry_run != 'true'
         run: flutter build apk --release
 
       - name: Validate Release APK Identity, Versioning & Privacy
+        if: needs.evaluate-and-tag.outputs.should_release == 'true' && needs.evaluate-and-tag.outputs.dry_run != 'true'
         run: |
           AAPT=$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/build-tools" -name aapt -type f | sort -V | tail -n 1)
           if [ -z "$AAPT" ] || [ ! -x "$AAPT" ]; then
@@ -264,10 +301,10 @@ jobs:
           BADGING=$("$AAPT" dump badging build/app/outputs/flutter-apk/app-release.apk)
 
           echo "Verifying package name..."
-          echo "$BADGING" | grep -E "package: name='io\.nishvanta\.keeva'"
+          echo "$BADGING" | grep -E "package: name='ratedwhats\.appstatusdownloader'"
 
           echo "Verifying application label..."
-          echo "$BADGING" | grep -E "application-label:'Keeva'"
+          echo "$BADGING" | grep -E "application-label:'WA Status Downloader'"
 
           EXPECTED_VERSION="${{ needs.evaluate-and-tag.outputs.version }}"
           EXPECTED_BUILD="${{ needs.evaluate-and-tag.outputs.build_number }}"
@@ -284,21 +321,36 @@ jobs:
           echo "Verifying version code: $EXPECTED_BUILD..."
           echo "$BADGING" | grep -E "versionCode='$EXPECTED_BUILD'"
 
-          echo "Verifying absence of sensitive permissions..."
+          echo "Verifying direct-install permissions..."
           if echo "$BADGING" | grep -q "android.permission.INTERNET"; then
             echo "::error::Release APK contains android.permission.INTERNET!"
             exit 1
           fi
-          if echo "$BADGING" | grep -q "android.permission.MANAGE_EXTERNAL_STORAGE"; then
-            echo "::error::Release APK contains android.permission.MANAGE_EXTERNAL_STORAGE!"
+          if ! echo "$BADGING" | grep -q "android.permission.MANAGE_EXTERNAL_STORAGE"; then
+            echo "::error::Release APK is missing its required direct-storage permission!"
             exit 1
           fi
-          echo "✓ Release APK identity, versioning ($EXPECTED_VERSION+$EXPECTED_BUILD), and privacy safeguards verified successfully."
+          echo "✓ Release APK identity, versioning ($EXPECTED_VERSION+$EXPECTED_BUILD), and direct-install permissions verified."
 
-      - name: Build Release AAB
+      - name: Verify Release APK Signature
+        if: needs.evaluate-and-tag.outputs.should_release == 'true' && needs.evaluate-and-tag.outputs.dry_run != 'true'
+        run: |
+          APKSIGNER=$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/build-tools" -name apksigner -type f | sort -V | tail -n 1)
+          if [ -z "$APKSIGNER" ] || [ ! -x "$APKSIGNER" ]; then
+            APKSIGNER=$(command -v apksigner || true)
+          fi
+          if [ -z "$APKSIGNER" ]; then
+            echo "::error::apksigner was not found in Android SDK build-tools or PATH"
+            exit 1
+          fi
+          "$APKSIGNER" verify --verbose --print-certs build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Build Signed Release AAB
+        if: needs.evaluate-and-tag.outputs.should_release == 'true' && needs.evaluate-and-tag.outputs.dry_run != 'true'
         run: flutter build appbundle --release
 
       - name: Validate Release AAB
+        if: needs.evaluate-and-tag.outputs.should_release == 'true' && needs.evaluate-and-tag.outputs.dry_run != 'true'
         run: |
           AAB_FILE="build/app/outputs/bundle/release/app-release.aab"
           if [ ! -s "$AAB_FILE" ]; then
@@ -314,8 +366,8 @@ jobs:
         run: |
           TAG_NAME="${{ needs.evaluate-and-tag.outputs.tag_name }}"
           mkdir -p staged-release-assets
-          cp build/app/outputs/flutter-apk/app-release.apk "staged-release-assets/Keeva-${TAG_NAME}-Android.apk"
-          cp build/app/outputs/bundle/release/app-release.aab "staged-release-assets/Keeva-${TAG_NAME}-Android.aab"
+          cp build/app/outputs/flutter-apk/app-release.apk "staged-release-assets/WA-Status-Downloader-${TAG_NAME}-Android.apk"
+          cp build/app/outputs/bundle/release/app-release.aab "staged-release-assets/WA-Status-Downloader-${TAG_NAME}-Android.aab"
           echo "Staged release assets:"
           ls -la staged-release-assets/
 
@@ -368,7 +420,7 @@ jobs:
         run: |
           flutter build ipa --release
           mkdir -p staged-ios-assets
-          cp build/ios/ipa/*.ipa "staged-ios-assets/Keeva-${{ needs.evaluate-and-tag.outputs.tag_name }}-iOS.ipa"
+          cp build/ios/ipa/*.ipa "staged-ios-assets/WA-Status-Downloader-${{ needs.evaluate-and-tag.outputs.tag_name }}-iOS.ipa"
 
       - name: Upload iOS Release Asset
         if: steps.signing-check.outputs.configured == 'true'
@@ -383,6 +435,8 @@ jobs:
     needs: [evaluate-and-tag, validate-and-build-android, build-ios]
     if: always() && !cancelled() && needs.evaluate-and-tag.outputs.should_release == 'true' && needs.evaluate-and-tag.outputs.dry_run != 'true' && needs.validate-and-build-android.result == 'success'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout exact release tag
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -414,7 +468,7 @@ jobs:
       - name: Generate Cryptographic SHA-256 Checksums
         run: |
           cd release-assets
-          sha256sum Keeva-* > SHA256SUMS.txt
+          sha256sum WA-Status-Downloader-* > SHA256SUMS.txt
           echo "=== SHA256SUMS.txt ==="
           cat SHA256SUMS.txt
           cd ..
@@ -438,7 +492,7 @@ jobs:
           TAG="${{ needs.evaluate-and-tag.outputs.tag_name }}"
           echo "Publishing GitHub Release for $TAG..."
           gh release create "$TAG" \
-            --title "Keeva $TAG" \
+            --title "WA Status Downloader $TAG" \
             --notes-file release-notes.md \
             release-assets/*
           echo "GitHub Release successfully published!"

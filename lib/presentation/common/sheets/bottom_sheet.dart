@@ -11,10 +11,10 @@ import 'package:whatsapp_status_saver/app/theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
 
-/// Modal bottom sheet launcher adhering to Keeva design specifications.
+/// Modal bottom sheet launcher for WA Status Downloader.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.17.
-abstract final class KeevaBottomSheet {
+/// Implements specification from docs/design/app-component-spec.md Section 2.17.
+abstract final class AppBottomSheet {
   /// Displays a modal bottom sheet with top radius 24dp, drag handle, and dark surface.
   static Future<T?> show<T>({
     required BuildContext context,
@@ -58,7 +58,7 @@ abstract final class KeevaBottomSheet {
     );
   }
 
-  /// Displays the Keeva Local-First & Privacy modal sheet.
+  /// Displays the Local-First & Privacy modal sheet.
   static Future<void> showTrustDetails(BuildContext context) {
     return show(
       context: context,
@@ -97,7 +97,7 @@ abstract final class KeevaBottomSheet {
               ),
               const SizedBox(height: AppSpacing.space16),
               Text(
-                'WA Status Downloader operates 100% locally on your device. It requires zero internet permissions, connects strictly to your selected WhatsApp folder via Android Storage Access Framework, and never uploads or logs your media.',
+                'WA Status Downloader scans WhatsApp status folders and its saved albums on your device. On newer Android versions, this requires the system\'s all-files access setting. The app has no internet permission and never uploads media.',
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.darkTextSecondary,
                   height: 1.5,
@@ -111,7 +111,7 @@ abstract final class KeevaBottomSheet {
     );
   }
 
-  /// Displays the Keeva Already Kept options modal sheet.
+  /// Displays the Already Saved options modal sheet.
   static Future<void> showAlreadyKeptOptions({
     required BuildContext context,
     required StatusItem item,

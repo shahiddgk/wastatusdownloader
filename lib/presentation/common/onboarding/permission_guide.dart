@@ -10,8 +10,8 @@ import 'permission_step.dart';
 
 /// The 3-step structured visual guide explaining Android SAF folder access.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.15
-/// and docs/design/keeva-ui-spec.md Screen A.
+/// Implements specification from docs/design/app-component-spec.md Section 2.15
+/// and docs/design/app-ui-spec.md Screen A.
 class PermissionGuide extends StatelessWidget {
   const PermissionGuide({super.key});
 

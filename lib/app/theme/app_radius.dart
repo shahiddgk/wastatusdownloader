@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Corner radius tokens for Keeva.
+/// Corner radius tokens for WA Status Downloader.
 ///
-/// Implements tokens from docs/design/keeva-design-system.md Section 6.
+/// Implements tokens from docs/design/app-design-system.md Section 6.
 abstract final class AppRadius {
   /// 4dp: Status badges, scrubber thumbs.
   static const double radiusXs = 4.0;

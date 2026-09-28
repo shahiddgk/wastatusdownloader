@@ -103,15 +103,15 @@ void main() {
         },
       );
 
-      test('KeevaColorsExtension lerp and copyWith work deterministically', () {
-        const darkExt = KeevaColorsExtension.dark;
-        const lightExt = KeevaColorsExtension.light;
+      test('AppColorsExtension lerp and copyWith work deterministically', () {
+        const darkExt = AppColorsExtension.dark;
+        const lightExt = AppColorsExtension.light;
 
         final copied = darkExt.copyWith(primaryDark: Colors.green);
         expect(copied.primaryDark, Colors.green);
         expect(copied.surfaceLevel0, darkExt.surfaceLevel0);
 
-        final lerped = darkExt.lerp(lightExt, 0.5) as KeevaColorsExtension;
+        final lerped = darkExt.lerp(lightExt, 0.5) as AppColorsExtension;
         expect(lerped, isNotNull);
         expect(lerped.surfaceLevel0, isNot(darkExt.surfaceLevel0));
       });
@@ -237,7 +237,7 @@ void main() {
     // =========================================================================
     // ICONS & THEME CONFIGURATION TESTS
     // =========================================================================
-    group('AppIcons & KeevaTheme', () {
+    group('AppIcons & AppTheme', () {
       test('AppIcons defines canonical rounded icons', () {
         expect(AppIcons.navMoments, Icons.auto_awesome_motion_rounded);
         expect(AppIcons.navKept, Icons.bookmark_rounded);
@@ -245,37 +245,37 @@ void main() {
         expect(AppIcons.actionKeep, Icons.bookmark_add_rounded);
       });
 
-      test('KeevaTheme.darkTheme configures Quiet Obsidian accurately', () {
-        final dark = KeevaTheme.darkTheme;
+      test('AppTheme.darkTheme configures Quiet Obsidian accurately', () {
+        final dark = AppTheme.darkTheme;
         expect(dark.brightness, Brightness.dark);
         expect(dark.scaffoldBackgroundColor, AppColors.darkBackground);
         expect(dark.colorScheme.primary, AppColors.darkPrimary);
         expect(dark.colorScheme.onPrimary, AppColors.darkOnPrimary);
-        expect(dark.extension<KeevaColorsExtension>(), isNotNull);
+        expect(dark.extension<AppColorsExtension>(), isNotNull);
         expect(
-          dark.extension<KeevaColorsExtension>()?.surfaceLevel0,
+          dark.extension<AppColorsExtension>()?.surfaceLevel0,
           AppColors.darkSurfaceLevel0,
         );
       });
 
-      test('KeevaTheme.lightTheme configures Crisp Editorial accurately', () {
-        final light = KeevaTheme.lightTheme;
+      test('AppTheme.lightTheme configures Crisp Editorial accurately', () {
+        final light = AppTheme.lightTheme;
         expect(light.brightness, Brightness.light);
         expect(light.scaffoldBackgroundColor, AppColors.lightBackground);
         expect(light.colorScheme.primary, AppColors.lightPrimary);
-        expect(light.extension<KeevaColorsExtension>(), isNotNull);
+        expect(light.extension<AppColorsExtension>(), isNotNull);
       });
 
-      testWidgets('KeevaTheme.colorsOf accessor retrieves extension', (
+      testWidgets('AppTheme.colorsOf accessor retrieves extension', (
         tester,
       ) async {
-        late KeevaColorsExtension colors;
+        late AppColorsExtension colors;
         await tester.pumpWidget(
           MaterialApp(
-            theme: KeevaTheme.darkTheme,
+            theme: AppTheme.darkTheme,
             home: Builder(
               builder: (context) {
-                colors = KeevaTheme.colorsOf(context);
+                colors = AppTheme.colorsOf(context);
                 return const SizedBox();
               },
             ),

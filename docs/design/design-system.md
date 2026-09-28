@@ -1,6 +1,6 @@
-# Keeva Design System Specification
+# WA Status Downloader Design System Specification
 
-**Product:** Keeva (WhatsApp Status Saver → New Product Identity)  
+**Product:** WA Status Downloader (WhatsApp Status Saver → New Product Identity)  
 **Document Status:** Complete Design System Specification  
 **Design Phase:** Phase 2E-A (Product Brand & UI/UX Design System)  
 **Theme:** Obsidian + Aurora  
@@ -11,7 +11,7 @@
 
 ## 1. Overview & Architectural Philosophy
 
-The Keeva Design System provides the deterministic visual tokens, components, typography, layout metrics, and motion choreographies for the application.
+The WA Status Downloader Design System provides the deterministic visual tokens, components, typography, layout metrics, and motion choreographies for the application.
 
 ### Key Tenets
 1. **Media Heroism:** UI chrome exists solely to frame and elevate visual content. Chrome elements are desaturated, quiet, and borderless or framed with subtle 1px translucent boundaries.
@@ -23,7 +23,7 @@ The Keeva Design System provides the deterministic visual tokens, components, ty
 
 ## 2. Color System & Semantic Tokens
 
-Keeva provides complete token parity across **Dark Theme** (Obsidian + Aurora, default) and **Light Theme** (Crisp Editorial).
+WA Status Downloader provides complete token parity across **Dark Theme** (Obsidian + Aurora, default) and **Light Theme** (Crisp Editorial).
 
 ### 2.1 Dark Theme Palette (Obsidian + Aurora)
 
@@ -126,7 +126,7 @@ All media durations (`0:24`), dimensions (`1080 × 1920`), timestamps (`14m ago`
 
 ## 4. Spacing & Layout Grid System
 
-Keeva strictly enforces an **8pt foundational grid** with a **4pt sub-grid** for micro-alignments.
+WA Status Downloader strictly enforces an **8pt foundational grid** with a **4pt sub-grid** for micro-alignments.
 
 ### 4.1 Spacing Scale
 
@@ -172,7 +172,7 @@ Rounded corners convey softness, precision, and the physical metaphor of modern 
 
 ## 6. Elevation, Surface Depth & Lighting
 
-In dark mode, traditional black drop shadows (`box-shadow: 0 8px 16px rgba(0,0,0,0.5)`) are invisible against dark canvases and create muddy artifacts. Keeva uses **Tonal Surface Elevation** combined with **1px Translucent Boundaries** and **Ambient Specular Sheen**:
+In dark mode, traditional black drop shadows (`box-shadow: 0 8px 16px rgba(0,0,0,0.5)`) are invisible against dark canvases and create muddy artifacts. WA Status Downloader uses **Tonal Surface Elevation** combined with **1px Translucent Boundaries** and **Ambient Specular Sheen**:
 
 ### 6.1 Elevation Hierarchy
 
@@ -215,7 +215,7 @@ Level 0: Base Canvas (#090B0E)
 
 ## 8. Motion & Animation Choreography
 
-Animations in Keeva are designed to feel **weightless, swift, and respectful**. Every animation serves an orientation purpose.
+Animations in WA Status Downloader are designed to feel **weightless, swift, and respectful**. Every animation serves an orientation purpose.
 
 ### 8.1 Motion Easing Curves
 
@@ -285,7 +285,7 @@ static const Curve standardEasing       = Cubic(0.20, 0.00, 0.00, 1.00); // Morp
 - **Placement:** Docked to the leading (left) edge of the screen.
 - **Width:** 80dp (compact) or 220dp (expanded on large displays > 900dp).
 - **Background:** `surfaceLevel0` (`#11141A`) with trailing divider `1px solid rgba(255, 255, 255, 0.06)`.
-- **Header:** Mini Keeva logo mark at top (32dp), items centered vertically, privacy trust pill anchored to the bottom.
+- **Header:** Mini WA Status Downloader logo mark at top (32dp), items centered vertically, privacy trust pill anchored to the bottom.
 
 ---
 

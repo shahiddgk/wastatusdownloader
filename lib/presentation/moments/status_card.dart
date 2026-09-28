@@ -15,7 +15,7 @@ import '../common/media/video_badge.dart';
 
 /// Primary media thumbnail card in the Moments grid.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.7:
+/// Implements specification from docs/design/app-component-spec.md Section 2.7:
 /// - Fixed aspect ratio 9:16.
 /// - 12dp rounded corners (`AppRadius.borderMd`).
 /// - Micro-interaction scale (0.98) on press.
@@ -34,8 +34,6 @@ class StatusCard extends StatefulWidget {
   final bool isSelected;
   final String? thumbnailPath;
   final Future<String?> Function(StatusItem)? thumbnailLoader;
-  final Widget? contactLabel;
-
   const StatusCard({
     super.key,
     required this.item,
@@ -46,7 +44,6 @@ class StatusCard extends StatefulWidget {
     this.isSelected = false,
     this.thumbnailPath,
     this.thumbnailLoader,
-    this.contactLabel,
   });
 
   @override
@@ -255,8 +252,6 @@ class _StatusCardState extends State<StatusCard> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              if (widget.contactLabel != null)
-                                widget.contactLabel!,
                               const SizedBox(height: AppSpacing.space4),
                               LayoutBuilder(
                                 builder: (context, constraints) {

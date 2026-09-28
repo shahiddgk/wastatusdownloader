@@ -4,15 +4,15 @@ import 'app_colors.dart';
 import 'app_radius.dart';
 import 'app_typography.dart';
 
-/// Central theme provider for Keeva.
+/// Central theme provider for WA Status Downloader.
 ///
 /// Builds complete, modern Material 3 [ThemeData] configurations
 /// for both Dark (Quiet Obsidian) and Light (Crisp Editorial) modes.
-abstract final class KeevaTheme {
-  /// Quick accessor for the [KeevaColorsExtension] from the active [BuildContext].
-  static KeevaColorsExtension colorsOf(BuildContext context) {
-    return Theme.of(context).extension<KeevaColorsExtension>() ??
-        KeevaColorsExtension.dark;
+abstract final class AppTheme {
+  /// Quick accessor for the [AppColorsExtension] from the active [BuildContext].
+  static AppColorsExtension colorsOf(BuildContext context) {
+    return Theme.of(context).extension<AppColorsExtension>() ??
+        AppColorsExtension.dark;
   }
 
   // ===========================================================================
@@ -185,7 +185,7 @@ abstract final class KeevaTheme {
       ),
 
       // Extensions
-      extensions: const [KeevaColorsExtension.dark],
+      extensions: const [AppColorsExtension.dark],
     );
   }
 
@@ -394,7 +394,7 @@ abstract final class KeevaTheme {
       ),
 
       // Extensions
-      extensions: const [KeevaColorsExtension.light],
+      extensions: const [AppColorsExtension.light],
     );
   }
 }

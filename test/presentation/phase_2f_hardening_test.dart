@@ -49,7 +49,7 @@ void main() {
         int tapCount = 0;
         await tester.pumpWidget(
           MaterialApp(
-            theme: KeevaTheme.darkTheme,
+            theme: AppTheme.darkTheme,
             home: Scaffold(
               body: Center(
                 child: KeepButton(
@@ -80,7 +80,7 @@ void main() {
       bool wasCalled = false;
       await tester.pumpWidget(
         MaterialApp(
-          theme: KeevaTheme.darkTheme,
+          theme: AppTheme.darkTheme,
           home: Scaffold(
             body: Center(
               child: KeepButton(
@@ -103,7 +103,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         MaterialApp(
-          theme: KeevaTheme.darkTheme,
+          theme: AppTheme.darkTheme,
           home: Scaffold(
             body: Center(
               child: KeepButton(state: KeepState.idle, onPressed: () {}),
@@ -121,7 +121,7 @@ void main() {
   group('Phase 2F Hardening: 200% Dynamic Text Scaling', () {
     Widget buildScaledApp(Widget child, {double textScale = 2.0}) {
       return MaterialApp(
-        theme: KeevaTheme.darkTheme,
+        theme: AppTheme.darkTheme,
         home: MediaQuery(
           data: MediaQueryData(
             size: const Size(400, 800),
@@ -279,7 +279,7 @@ void main() {
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
-            theme: KeevaTheme.darkTheme,
+            theme: AppTheme.darkTheme,
             home: MediaQuery(
               data: const MediaQueryData(
                 size: Size(400, 800),
@@ -308,7 +308,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             child: MaterialApp(
-              theme: KeevaTheme.darkTheme,
+              theme: AppTheme.darkTheme,
               home: MediaViewerScreen(
                 item: sampleItem,
                 onDismiss: () => dismissed = true,
@@ -333,7 +333,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            theme: KeevaTheme.darkTheme,
+            theme: AppTheme.darkTheme,
             home: MediaViewerScreen(
               item: sampleItem,
               onDismiss: () => dismissed = true,
@@ -370,7 +370,7 @@ void main() {
         // Test compact width (400dp)
         await tester.pumpWidget(
           MaterialApp(
-            theme: KeevaTheme.darkTheme,
+            theme: AppTheme.darkTheme,
             home: MediaQuery(
               data: const MediaQueryData(size: Size(400, 800)),
               child: AppShell(
@@ -381,13 +381,13 @@ void main() {
             ),
           ),
         );
-        expect(find.byType(KeevaBottomNavBar), findsOneWidget);
-        expect(find.byType(KeevaNavRail), findsNothing);
+        expect(find.byType(AppBottomNavBar), findsOneWidget);
+        expect(find.byType(AppNavRail), findsNothing);
 
         // Test tablet width (700dp)
         await tester.pumpWidget(
           MaterialApp(
-            theme: KeevaTheme.darkTheme,
+            theme: AppTheme.darkTheme,
             home: MediaQuery(
               data: const MediaQueryData(size: Size(700, 900)),
               child: AppShell(
@@ -398,8 +398,8 @@ void main() {
             ),
           ),
         );
-        expect(find.byType(KeevaNavRail), findsOneWidget);
-        expect(find.byType(KeevaBottomNavBar), findsNothing);
+        expect(find.byType(AppNavRail), findsOneWidget);
+        expect(find.byType(AppBottomNavBar), findsNothing);
       },
     );
   });
@@ -410,7 +410,7 @@ void main() {
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
-            theme: KeevaTheme.darkTheme,
+            theme: AppTheme.darkTheme,
             home: const Scaffold(
               body: Center(child: VideoBadge(durationMs: 0)),
             ),
@@ -427,7 +427,7 @@ void main() {
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
-            theme: KeevaTheme.darkTheme,
+            theme: AppTheme.darkTheme,
             home: const Scaffold(
               body: Center(child: VideoBadge(durationMs: 24000)),
             ),
@@ -440,16 +440,16 @@ void main() {
     );
 
     testWidgets(
-      'KeevaBottomSheet.showTrustDetails renders correctly with design tokens',
+      'AppBottomSheet.showTrustDetails renders correctly with design tokens',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
-            theme: KeevaTheme.darkTheme,
+            theme: AppTheme.darkTheme,
             home: Scaffold(
               body: Builder(
                 builder: (context) {
                   return ElevatedButton(
-                    onPressed: () => KeevaBottomSheet.showTrustDetails(context),
+                    onPressed: () => AppBottomSheet.showTrustDetails(context),
                     child: const Text('Open'),
                   );
                 },
@@ -463,6 +463,11 @@ void main() {
 
         expect(find.text('Private & Local-First'), findsOneWidget);
         expect(find.byIcon(AppIcons.privacyShield), findsOneWidget);
+        expect(
+          find.textContaining('WA Status Downloader scans'),
+          findsOneWidget,
+        );
+        expect(find.text('WA Status Downloader'), findsNothing);
       },
     );
   });

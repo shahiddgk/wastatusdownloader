@@ -1,69 +1,45 @@
-# Keeva Dual-Platform Release Checklist
+# Release checklist
 
-**Product:** Keeva
-**Developer:** Nishvanta Labs
-**Android Application ID:** `io.nishvanta.keeva`
-**iOS Bundle Identifier:** `io.nishvanta.keeva`
+**Product:** WA Status Downloader  
+**Android package:** `ratedwhats.appstatusdownloader`  
+**iOS bundle ID:** `ratedwhats.appstatusdownloader`
 
----
+## Source and quality
 
-This checklist must be executed sequentially before publishing or distributing any release of Keeva on Google Play or the Apple App Store.
+- [ ] `git status` contains only intended changes.
+- [ ] No keystore, `key.properties`, certificate, password, token, or user media is tracked.
+- [ ] `dart format --output=none --set-exit-if-changed lib test integration_test tool` passes.
+- [ ] `flutter analyze` passes.
+- [ ] `flutter test` passes.
+- [ ] `./gradlew :app:testDebugUnitTest` passes from `android/`.
+- [ ] Version and build number in `pubspec.yaml` are correct.
 
----
+## Signed Android direct release
 
-## 1. Common Pre-Release Verification
+- [ ] Application ID and namespace are `ratedwhats.appstatusdownloader`.
+- [ ] App label is **WA Status Downloader** and launcher label is **WA Saver**.
+- [ ] `android.permission.INTERNET` is absent.
+- [ ] `android.permission.MANAGE_EXTERNAL_STORAGE` is present for the current direct-install flow.
+- [ ] The upload keystore and both passwords have an encrypted backup.
+- [ ] `flutter build apk --release` succeeds.
+- [ ] `flutter build appbundle --release` succeeds when an AAB is needed.
+- [ ] `apksigner verify --verbose --print-certs` succeeds for the APK.
+- [ ] APK package, version, label, and permissions are checked with `aapt dump badging`.
+- [ ] The signed APK is installed and tested on a physical Android device.
+- [ ] SHA-256 checksums accompany public downloads.
 
-- [ ] **Working Tree Cleanliness:** `git status` reports working tree clean.
-- [ ] **Secret Leak Audit:** No private keys (`*.jks`, `*.keystore`, `*.p12`, `*.cer`, `*.p8`, `*.mobileprovision`, `key.properties`, `local.properties`) are tracked.
-- [ ] **License Integrity:** `LICENSE` contains official Apache-2.0 text and attributions remain intact.
-- [ ] **Code Formatting:** `dart format --output=none --set-exit-if-changed lib test integration_test` passes with 0 changes.
-- [ ] **Static Analysis:** `flutter analyze` passes with 0 issues.
-- [ ] **Automated Tests:**
-  - `flutter test` (all unit & widget tests pass).
-  - `cd android && ./gradlew test` (all native JVM tests pass).
-- [ ] **Version Synchronization:**
-  - `pubspec.yaml`: `version: MAJOR.MINOR.PATCH+BUILD`.
-  - Android `versionName` = `MAJOR.MINOR.PATCH`, `versionCode` = `BUILD`.
-  - iOS `CFBundleShortVersionString` = `MAJOR.MINOR.PATCH`, `CFBundleVersion` = `BUILD`.
+## Google Play gate
 
----
+- [ ] The All files access declaration is approved for an eligible core use case, or the permission has been removed through an approved storage redesign.
+- [ ] Google Play App Signing is configured.
+- [ ] Required support and privacy-policy URLs are published.
+- [ ] Data Safety and permission declarations match the tested binary.
+- [ ] Store copy and screenshots describe only implemented behavior.
 
-## 2. Android Release Gate (Google Play Store)
+## iOS gate
 
-- [ ] **Application ID Verified:** `io.nishvanta.keeva` declared in `android/app/build.gradle.kts` and verified via AAPT.
-- [ ] **Version Code & Name Verified:** Monotonically increasing `versionCode` verified.
-- [ ] **Manifest & Privacy Safeguards:**
-  - `android.permission.INTERNET` is **ABSENT**.
-  - `android.permission.MANAGE_EXTERNAL_STORAGE` is **ABSENT**.
-  - FileProvider authority matches `io.nishvanta.keeva.fileprovider`.
-  - App label displays as `Keeva`.
-- [ ] **Upload Key Secured:** Upload keystore provisioned in untracked `android/key.properties` (or CI secret) with offline encrypted backup.
-- [ ] **Release AAB Built:** `flutter build appbundle --release` produces valid non-empty `.aab`.
-- [ ] **Release APK Verified on Hardware:** `flutter build apk --release` installed and verified on physical Android device (API 26–36).
-- [ ] **Play App Signing Configured:** Play Console app registered with Google Play App Signing enabled.
-- [ ] **Store Listing Prepared:** Title, Short Description, and Full Description finalized (`docs/release/store-metadata.md`).
-- [ ] **Store Screenshots Ready:** 512x512 icon, 1024x500 feature graphic, and min 4 high-res phone screenshots (`docs/release/store-screenshots.md`).
-- [ ] **Data Safety Form Reviewed:** Verified "No data collected / No data shared" in Play Console.
-- [ ] **Privacy Policy Ready:** Published and accessible URL configured.
-- [ ] **Internal Testing Gate:** Uploaded to Internal Testing track and validated by QA team.
-- [ ] **Production Submission:** Phased rollout initiated (10% -> 25% -> 50% -> 100%).
-
----
-
-## 3. iOS Release Gate (Apple App Store)
-
-- [ ] **Bundle Identifier Verified:** `io.nishvanta.keeva` configured in Xcode build settings (`PRODUCT_BUNDLE_IDENTIFIER`).
-- [ ] **Display Name Verified:** `CFBundleDisplayName` configured as `Keeva` in `ios/Runner/Info.plist`.
-- [ ] **Marketing Version & Build Number:** Synced with `pubspec.yaml` (`1.0.0` build `1`).
-- [ ] **App Store Connect Record Created:** App created under Nishvanta Labs organization in App Store Connect.
-- [ ] **Signing Configured:** Apple Distribution Certificate and App Store Provisioning Profile provisioned.
-- [ ] **Release Build Generated:** `flutter build ios --release` succeeds without compilation errors.
-- [ ] **Release Archive Created:** Xcode Archive (`Runner.xcarchive`) generated successfully.
-- [ ] **Archive Validated:** Xcode Organizer / `xcrun altool` validation passes with 0 errors or warnings.
-- [ ] **TestFlight Upload:** Archive uploaded to App Store Connect and processed cleanly.
-- [ ] **Internal Testing (TestFlight):** Tested by internal organization members.
-- [ ] **Store Screenshots Ready:** 1024x1024 App Store icon, 6.9" and 6.5" iPhone screenshots verified (`docs/release/store-screenshots.md`).
-- [ ] **App Privacy Nutrition Labels:** Verified "No data collected" declared in App Store Connect.
-- [ ] **Age Rating Configured:** Completed age rating questionnaire (4+ rating).
-- [ ] **App Review Notes Prepared:** Feature matrix and review demo instructions documented.
-- [ ] **App Review Submission:** Submitted for App Review.
+- [ ] Display name is **WA Saver**.
+- [ ] A matching Apple Distribution certificate and provisioning profile are configured.
+- [ ] The product scope does not claim WhatsApp status discovery.
+- [ ] A verified iOS media-import flow exists before public release.
+- [ ] App Privacy declarations match the tested binary.

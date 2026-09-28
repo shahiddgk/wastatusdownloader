@@ -1,6 +1,6 @@
 # Feature Priority Matrix & Implementation Roadmap
 
-**Product:** Keeva (WhatsApp Status Saver → New Product Identity)  
+**Product:** WA Status Downloader (WhatsApp Status Saver → New Product Identity)  
 **Document Status:** Approved Feature Priorities & Non-Functional Specifications  
 **Design Phase:** Phase 2E-A (Product Brand & UI/UX Design System)  
 **Authors:** Senior Technical Product Manager & Mobile Engineering Lead  
@@ -60,7 +60,7 @@ This table connects every approved product capability directly to the staged pha
 
 ## 3. Non-Functional Requirements & Performance Budgets
 
-To achieve the "calm, fast, trustworthy" brand promise, Keeva enforces strict technical performance thresholds:
+To achieve the "calm, fast, trustworthy" brand promise, WA Status Downloader enforces strict technical performance thresholds:
 
 ### 3.1 Frame Budgets & Rendering
 - **Scroll Rate:** Continuous 60fps on 60Hz displays and 120fps on 120Hz AMOLED displays (Xiaomi 2311DRK48I).

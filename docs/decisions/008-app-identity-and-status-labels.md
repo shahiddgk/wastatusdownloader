@@ -9,8 +9,8 @@ Changing the Android application ID creates a separate installed application.
 An installation of `offline.wastatus.downloader` is not upgraded or removed.
 Its private preferences and permission grants do not transfer automatically.
 Existing publicly saved media remains discoverable after granting access.
-The internal scanner method-channel name is unchanged so both sides of its
-existing contract remain compatible.
+The internal scanner method-channel name is
+`ratedwhats.appstatusdownloader/scanner` on both Dart and Android.
 
 The launcher uses the text-free raster master in `assets/icon/launcher_icon.png`.
 Android adaptive icons inset it by 12% to keep the symbol clear of launcher

@@ -4,7 +4,7 @@ import 'package:whatsapp_status_saver/app/theme/app_typography.dart';
 
 /// Formats duration in milliseconds into jitter-free tabular time strings.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.10.
+/// Implements specification from docs/design/app-component-spec.md Section 2.10.
 class DurationLabel extends StatelessWidget {
   final int durationMs;
   final TextStyle? style;

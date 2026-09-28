@@ -234,17 +234,17 @@ environment:
           '- feat: add kept media vault (a1b2c3d)',
           '- fix: resolve thumbnail aspect ratio (e5f6g7h)',
         ],
-        checksums: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  Keeva-v1.2.0-Android.apk',
+        checksums: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  WA-Status-Downloader-v1.2.0-Android.apk',
       );
 
-      expect(notes, contains('# Keeva v1.2.0'));
+      expect(notes, contains('# WA Status Downloader v1.2.0'));
       expect(notes, contains('## Release type'));
       expect(notes, contains('Minor'));
       expect(notes, contains('## Changes'));
       expect(notes, contains('- feat: add kept media vault (a1b2c3d)'));
       expect(notes, contains('## Downloads'));
-      expect(notes, contains('Keeva-v1.2.0-Android.apk'));
-      expect(notes, contains('Keeva-v1.2.0-Android.aab'));
+      expect(notes, contains('WA-Status-Downloader-v1.2.0-Android.apk'));
+      expect(notes, contains('WA-Status-Downloader-v1.2.0-Android.aab'));
       expect(notes, contains('## Verification'));
       expect(notes, contains('### SHA-256 Checksums'));
       expect(
@@ -259,12 +259,12 @@ environment:
 
     test('updatePubspecFile updates version and preserves other content', () {
       final tempDir = Directory.systemTemp.createTempSync(
-        'keeva_release_test_',
+        'wa_status_downloader_release_test_',
       );
       try {
         final testPubspec = File('${tempDir.path}/pubspec.yaml');
         testPubspec.writeAsStringSync('''
-name: keeva
+name: wa_status_downloader
 description: WhatsApp Status Saver
 publish_to: 'none'
 
@@ -286,7 +286,7 @@ dependencies:
 
         final updatedContent = testPubspec.readAsStringSync();
         expect(updatedContent, contains('version: 1.1.0+2'));
-        expect(updatedContent, contains('name: keeva'));
+        expect(updatedContent, contains('name: wa_status_downloader'));
         expect(updatedContent, contains('sdk: ^3.13.2'));
       } finally {
         tempDir.deleteSync(recursive: true);

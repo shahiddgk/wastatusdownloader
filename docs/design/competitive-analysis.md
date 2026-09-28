@@ -1,6 +1,6 @@
 # Competitive Analysis & Strategic Product Differentiation
 
-**Product:** Keeva (WhatsApp Status Saver → New Product Identity)  
+**Product:** WA Status Downloader (WhatsApp Status Saver → New Product Identity)  
 **Document Status:** Approved Strategy & Competitive Analysis  
 **Design Phase:** Phase 2E-A (Product Brand & UI/UX Design System)  
 **Authors:** Senior Product Strategist & Mobile UX Researcher  
@@ -26,7 +26,7 @@ The WhatsApp Status downloading space on Android is one of the highest-volume ut
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                          CURRENT COMPETITOR LANDSCAPE                       │
 ├───────────────────────┬───────────────────────────┬─────────────────────────┤
-│ AD-CLUTTERED UTILITIES│ PIRATED / MODDED APKS     │ KEEVA (OUR POSITION)    │
+│ AD-CLUTTERED UTILITIES│ PIRATED / MODDED APKS     │ WA STATUS DOWNLOADER (OUR POSITION)    │
 │ (Statusly, StatusKeep)│ (GBWhatsApp, FMWhatsApp)  │                         │
 ├───────────────────────┼───────────────────────────┼─────────────────────────┤
 │ • 5 to 8 ad impressions│ • Direct in-chat download │ • Zero ads forever       │
@@ -64,7 +64,7 @@ To avoid claiming table-stakes functionality as unique innovations, we strictly 
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ TIER 2: UX DIFFERENTIATORS (Where Keeva crushes competitors immediately)    │
+│ TIER 2: UX DIFFERENTIATORS (Where WA Status Downloader crushes competitors immediately)    │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ • "Keep" vs "Download" emotional reframing                                  │
 │ • Duplicate Shield (Prevents duplicate gallery pollution with zero guilt)   │
@@ -91,10 +91,10 @@ To avoid claiming table-stakes functionality as unique innovations, we strictly 
 
 ## 4. In-Depth Evaluation & Ranking of Product Differentiators
 
-The 10 product differentiators proposed for Keeva have been evaluated using a 5-dimension scoring framework:
+The 10 product differentiators proposed for WA Status Downloader have been evaluated using a 5-dimension scoring framework:
 - **User Value (UV):** Direct benefit, delight, or peace of mind to the end user (1–10).
 - **Technical Complexity (TC):** Difficulty of native and Flutter implementation (1–10; lower means easier).
-- **Differentiation (DF):** How much this sets Keeva apart from Play Store competitors (1–10).
+- **Differentiation (DF):** How much this sets WA Status Downloader apart from Play Store competitors (1–10).
 - **Retention Potential (RP):** Likelihood of turning a one-time downloader into a loyal daily user (1–10).
 - **Implementation Cost (IC):** Engineering and design effort required (1–10; lower means cheaper).
 
@@ -117,7 +117,7 @@ The 10 product differentiators proposed for Keeva have been evaluated using a 5-
 
 ## 5. Comprehensive Feature Comparison Matrix
 
-| Dimension / Feature | Generic Status Savers (e.g., Status Saver 2026) | Statusly | Status Vault | **KEEVA (Phase 2)** |
+| Dimension / Feature | Generic Status Savers (e.g., Status Saver 2026) | Statusly | Status Vault | **WA STATUS DOWNLOADER (Phase 2)** |
 | :--- | :--- | :--- | :--- | :--- |
 | **Visual Aesthetic** | Cluttered neon green WhatsApp clone; low contrast | Material 2 cards with blue accents; heavy ads | Generic dark grey utility layout | **Obsidian + Aurora (Deep graphite, restrained mint, editorial typography)** |
 | **Advertising** | 4–6 ads per session; unskippable video on save | Interstitial ads between card clicks | Banner ads on bottom; full-screen exit ad | **Zero Ads. 100% clean UI.** |

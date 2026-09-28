@@ -307,7 +307,7 @@ class StorageAccessRevoked extends StorageAccessState {
 ## 7. Platform Channel Specification
 
 ### 7.1 Channel Identification
-- **Channel Name:** `com.example.whatsapp_status_saver/scanner`
+- **Channel Name:** `ratedwhats.appstatusdownloader/scanner`
 - **Ownership:** Maintained by `MethodChannelStatusScanner` (Dart) and `AndroidStatusScanner` (Kotlin).
 
 ### 7.2 Method Contract Evaluation & Operations
@@ -407,10 +407,10 @@ We evaluated all 9 candidate channel operations from the design brief:
 ## 8. Android Native Architecture
 
 ### 8.1 Modular Kotlin Architecture
-In the POC, all native code lived inside `MainActivity.kt` (440 lines). Production separates these concerns into dedicated classes in `io.nishvanta.keeva.status`:
+In the POC, all native code lived inside `MainActivity.kt` (440 lines). Production separates these concerns into dedicated classes in `ratedwhats.appstatusdownloader.status`:
 
 ```
-android/app/src/main/kotlin/io/nishvanta/keeva/
+android/app/src/main/kotlin/ratedwhats/appstatusdownloader/
 ├── MainActivity.kt                      (Slim launcher & engine hook)
 └── status/
     ├── AndroidStatusScanner.kt          (MethodCallHandler & Coroutine orchestrator)
@@ -742,7 +742,7 @@ Users may run:
 - `StateNotifiers`: Test state transitions (`Loading` -> `Loaded`, `Loading` -> `Empty`, error handling).
 
 ### 15.2 Platform Channel Tests (`test/platform/`)
-- Intercept `MethodChannel('com.example.whatsapp_status_saver/scanner')` using `TestDefaultBinaryMessengerBinding`.
+- Intercept `MethodChannel('ratedwhats.appstatusdownloader/scanner')` using `TestDefaultBinaryMessengerBinding`.
 - Verify method arguments and error code translation.
 
 ### 15.3 Native Android Tests (`android/app/src/test/`)

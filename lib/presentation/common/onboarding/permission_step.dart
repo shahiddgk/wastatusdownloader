@@ -7,7 +7,7 @@ import 'package:whatsapp_status_saver/app/theme/app_typography.dart';
 
 /// Individual numbered instruction card within the permission guide.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.16.
+/// Implements specification from docs/design/app-component-spec.md Section 2.16.
 class PermissionStep extends StatelessWidget {
   final int stepNumber;
   final String title;

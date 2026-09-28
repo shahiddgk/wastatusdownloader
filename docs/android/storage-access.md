@@ -388,7 +388,7 @@ In compliance with `AGENTS.md` (Section 5, 10, 11, 12), the UI must not know any
 ### 2. Platform Channel Protocol Definition
 
 #### Channel Name:
-`com.example.whatsapp_status_saver/scanner`
+`ratedwhats.appstatusdownloader/scanner`
 
 #### Methods:
 1. `checkFolderAccess()`

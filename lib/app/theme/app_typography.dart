@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Semantic typography tokens for Keeva.
+/// Semantic typography tokens for WA Status Downloader.
 ///
 /// Implements the Plus Jakarta Sans type scale according to
-/// docs/design/keeva-design-system.md Section 4.
+/// docs/design/app-design-system.md Section 4.
 abstract final class AppTypography {
   /// Primary font family name.
   static const String fontFamily = 'Plus Jakarta Sans';
@@ -153,7 +153,7 @@ abstract final class AppTypography {
     fontFeatures: [FontFeature.tabularFigures()],
   );
 
-  /// Builds a [TextTheme] mapped to the Keeva type scale with given text colors.
+  /// Builds a [TextTheme] mapped to the WA Status Downloader type scale with given text colors.
   static TextTheme buildTextTheme({
     required Color primaryColor,
     required Color secondaryColor,

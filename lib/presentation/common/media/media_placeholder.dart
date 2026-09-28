@@ -6,7 +6,7 @@ import 'package:whatsapp_status_saver/app/theme/app_radius.dart';
 
 /// Deterministic 9:16 media placeholder rendered while thumbnails load.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.19:
+/// Implements specification from docs/design/app-component-spec.md Section 2.19:
 /// - Guarantees zero layout shifts during async loading.
 class MediaPlaceholder extends StatelessWidget {
   final bool isVideo;

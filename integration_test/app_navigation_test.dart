@@ -64,7 +64,7 @@ void main() {
     isSaved: false,
   );
 
-  group('Keeva End-to-End Navigation Integration Test', () {
+  group('WA Status Downloader End-to-End Navigation Integration Test', () {
     testWidgets('App launch, tab navigation, and filter switching', (
       tester,
     ) async {
@@ -83,7 +83,7 @@ void main() {
               () => TestStatusListNotifier(StatusListSuccess(items: items)),
             ),
           ],
-          child: const KeevaApp(),
+          child: const StatusSaverApp(),
         ),
       );
       await tester.pumpAndSettle();

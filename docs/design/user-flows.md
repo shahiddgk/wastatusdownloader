@@ -1,6 +1,6 @@
 # User Flows & Interaction State Machines
 
-**Product:** Keeva (WhatsApp Status Saver → New Product Identity)  
+**Product:** WA Status Downloader (WhatsApp Status Saver → New Product Identity)  
 **Document Status:** Approved Interaction Architecture  
 **Design Phase:** Phase 2E-A (Product Brand & UI/UX Design System)  
 **Authors:** Senior Mobile UX Architect  
@@ -10,18 +10,18 @@
 
 ## 1. Flow 1: First-Time User Onboarding & SAF Folder Grant
 
-This flow guides the user from cold initial app launch through the required Android Storage Access Framework (SAF) folder authorization with zero confusion and zero technical jargon.
+This flow guides the user from cold initial app launch through the required Android file-access authorization with zero confusion and zero technical jargon.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User
-    participant FlutterUI as Keeva (Flutter UI)
+    participant FlutterUI as WA Status Downloader (Flutter UI)
     participant Channel as Platform Channel
     participant Native as Kotlin (SafStorageManager)
     participant System as Android OS (DocumentsUI)
 
-    User->>FlutterUI: Opens Keeva for the first time
+    User->>FlutterUI: Opens WA Status Downloader for the first time
     FlutterUI->>Channel: checkFolderAccess()
     Channel->>Native: Check persisted URI permissions
     Native-->>FlutterUI: { hasAccess: false }
@@ -44,14 +44,14 @@ sequenceDiagram
 ```
 
 ### Flow 1 Failure & Recovery Paths
-- **User Cancels System Picker:** Native returns `granted: false`. Keeva displays Screen 04 with a gentle prompt: *"Folder connection is required to discover your statuses. Tap Connect whenever you're ready."*
+- **User Cancels System Picker:** Native returns `granted: false`. WA Status Downloader displays Screen 04 with a gentle prompt: *"Folder connection is required to discover your statuses. Tap Connect whenever you're ready."*
 - **User Selects Wrong Folder:** Native checks if the selected tree URI contains `.Statuses` or `com.whatsapp`. If completely unrelated, native flags a warning: *"Selected folder does not look like WhatsApp Media. Tap here to re-select."*
 
 ---
 
 ## 2. Flow 2: Quick-Keep Single Moment (<5s Target)
 
-The hallmark of Keeva is an ultra-fast, frictionless path to preserve a status update before it expires.
+The hallmark of WA Status Downloader is an ultra-fast, frictionless path to preserve a status update before it expires.
 
 ```
                   THE 5-SECOND KEEP PROMISE
@@ -62,7 +62,7 @@ The hallmark of Keeva is an ultra-fast, frictionless path to preserve a status u
 
 ```mermaid
 flowchart TD
-    Start([User Launches Keeva]) --> Scan[Background Kotlin Scans Statuses]
+    Start([User Launches WA Status Downloader]) --> Scan[Background Kotlin Scans Statuses]
     Scan --> Grid[Moments Grid Appears < 1.2s]
     Grid --> Decision{User Action?}
     

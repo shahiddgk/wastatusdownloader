@@ -8,9 +8,9 @@ import 'package:whatsapp_status_saver/app/theme/app_typography.dart';
 
 enum SecondaryButtonVariant { outlined, ghost }
 
-/// Secondary/neutral action button for Keeva.
+/// Secondary/neutral action button for WA Status Downloader.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.5:
+/// Implements specification from docs/design/app-component-spec.md Section 2.5:
 /// - Outlined: 1.5px subtle border rgba(255, 255, 255, 0.16)
 /// - Ghost: Transparent background with light touch highlight
 /// - Guaranteed minimum 48x48dp interactive hit target.

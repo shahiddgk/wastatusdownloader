@@ -85,7 +85,7 @@ void main() {
         if (mockSaveNotifier != null)
           saveNotifierProvider.overrideWith(() => mockSaveNotifier),
       ],
-      child: MaterialApp(theme: KeevaTheme.darkTheme, home: child),
+      child: MaterialApp(theme: AppTheme.darkTheme, home: child),
     );
   }
 
@@ -354,7 +354,8 @@ void main() {
               savedMedia: SavedMedia(
                 id: 'saved_1',
                 originalFileName: testImageItem.displayName,
-                savedUriOrPath: '/storage/emulated/0/DCIM/Keeva/img.jpg',
+                savedUriOrPath:
+                    '/storage/emulated/0/DCIM/WA Status Downloader/img.jpg',
                 mediaType: MediaType.image,
                 mimeType: testImageItem.mimeType,
                 sizeBytes: testImageItem.sizeBytes,

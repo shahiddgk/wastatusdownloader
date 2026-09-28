@@ -6,7 +6,7 @@ import 'app/app.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: KeevaApp()));
+  runApp(const ProviderScope(child: StatusSaverApp()));
 }
 
 class SafPocApp extends StatelessWidget {
@@ -36,7 +36,7 @@ class SafPocScreen extends StatefulWidget {
 
 class _SafPocScreenState extends State<SafPocScreen> {
   static const MethodChannel _channel = MethodChannel(
-    'com.example.whatsapp_status_saver/scanner',
+    'ratedwhats.appstatusdownloader/scanner',
   );
 
   final List<String> _logs = [];

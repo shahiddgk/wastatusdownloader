@@ -1,6 +1,6 @@
-# Keeva UI/UX Screen & Wireframe Specification
+# WA Status Downloader UI/UX Screen & Wireframe Specification
 
-**Product:** Keeva (WhatsApp Status Saver → New Product Identity)  
+**Product:** WA Status Downloader (WhatsApp Status Saver → New Product Identity)  
 **Document Status:** Approved UI/UX Specification  
 **Design Phase:** Phase 2E-A (Product Brand & UI/UX Design System)  
 **Authors:** Senior Mobile UX Architect & Visual Interaction Designer  
@@ -10,7 +10,7 @@
 
 ## 1. Information Architecture & Navigation Model
 
-Keeva is structured around three primary destinations, accessible via a bottom navigation bar on mobile and an adaptive navigation rail on tablets and landscape orientations:
+WA Status Downloader is structured around three primary destinations, accessible via a bottom navigation bar on mobile and an adaptive navigation rail on tablets and landscape orientations:
 
 ```
                               ┌─────────────────────────┐
@@ -57,10 +57,10 @@ Keeva is structured around three primary destinations, accessible via a bottom n
 │                                         │
 │                                         │
 │                   ╭──╮                  │
-│                  │  ● │                 │  <-- Keeva Logo Mark (64×64dp)
+│                  │  ● │                 │  <-- WA Status Downloader Logo Mark (64×64dp)
 │                   ╰──╯                  │      Subtle aurora mint shimmer
 │                                         │
-│                  KEEVA                  │  <-- Plus Jakarta Sans (18sp, Tracking +2)
+│                  WA STATUS DOWNLOADER                  │  <-- Plus Jakarta Sans (18sp, Tracking +2)
 │                                         │
 │                                         │
 │                                         │
@@ -72,11 +72,11 @@ Keeva is structured around three primary destinations, accessible via a bottom n
 ```
 
 - **Visual Hierarchy:** Centered logo mark with subtle radiant glow. Brand wordmark placed 16dp below. Tagline "Private by design" anchored 32dp above navigation bar.
-- **Components:** `KeevaLogoMark`, `BrandWordmark`, `Text` tagline.
+- **Components:** `WA Status DownloaderLogoMark`, `BrandWordmark`, `Text` tagline.
 - **Colors:** Canvas `background` (`#090B0E`), Mark `primary` (`#10B981`) + `accent` (`#6366F1`) subtle gradient, text `textSecondary` (`#9CA3AF`).
 - **Interaction & Logic:** Native Android 12+ Splash API transitions seamlessly into Flutter. StateNotifier checks persisted SAF access via native `checkFolderAccess`. If granted, navigates to Moments Home (0200ms); if absent, navigates to Onboarding Screen 02.
 - **Animation:** Central spark fades in with a gentle spring scale (`0.8` to `1.0` over 350ms).
-- **Accessibility:** `Semantics(label: "Keeva, private moment keeper, loading")`.
+- **Accessibility:** `Semantics(label: "WA Status Downloader, private moment keeper, loading")`.
 
 ---
 
@@ -96,7 +96,7 @@ Keeva is structured around three primary destinations, accessible via a bottom n
 │   that matter.                          │
 │                                         │
 │   Statuses disappear in 24 hours.       │  <-- Body Large (15sp, textSecondary)
-│   Keeva lets you quietly save photos    │
+│   WA Status Downloader lets you quietly save photos    │
 │   and videos before they vanish.        │
 │                                         │
 │   ● ○ ○                                 │  <-- Pagination Dots (8dp mint pill)
@@ -201,7 +201,7 @@ Keeva is structured around three primary destinations, accessible via a bottom n
            User Grants Access
                     │
 ┌───────────────────▼─────────────────────┐
-│ [KEEVA RE-ENTERS FOREGROUND]            │
+│ [WA STATUS DOWNLOADER RE-ENTERS FOREGROUND]            │
 │                                         │
 │                 ╭───╮                   │
 │                │  ✓  │                  │  <-- Animated Mint Pulse
@@ -223,7 +223,7 @@ Keeva is structured around three primary destinations, accessible via a bottom n
 
 ```
 ┌─────────────────────────────────────────┐
-│  KEEVA                       [🔒 Private]│  <-- Top Bar (Brand + Trust Pill)
+│  WA STATUS DOWNLOADER                       [🔒 Private]│  <-- Top Bar (Brand + Trust Pill)
 │                                         │
 │  Today                                  │  <-- Display Medium (28sp SemiBold)
 │  18 moments available                   │  <-- Body Small (12sp textSecondary)
@@ -534,7 +534,7 @@ STATE D: ALREADY KEPT (DUPLICATE)
 │                                         │
 │  ┌───────────────────────────────────┐  │
 │  │ [✓] 100% On-Device Processing     │  │
-│  │     Keeva has zero internet        │  │
+│  │     WA Status Downloader has zero internet        │  │
 │  │     permissions in AndroidManifest│  │
 │  ├───────────────────────────────────┤  │
 │  │ [✓] Isolated Folder Access        │  │
@@ -542,7 +542,7 @@ STATE D: ALREADY KEPT (DUPLICATE)
 │  │     folder chosen by you is read  │  │
 │  ├───────────────────────────────────┤  │
 │  │ [✓] No Chats or Contacts          │  │
-│  │     Keeva cannot read messages,    │  │
+│  │     WA Status Downloader cannot read messages,    │  │
 │  │     sender identities, or numbers │  │
 │  ├───────────────────────────────────┤  │
 │  │ [✓] Zero Telemetry Tracking       │  │

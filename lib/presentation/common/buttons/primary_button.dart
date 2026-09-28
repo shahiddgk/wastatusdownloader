@@ -5,9 +5,9 @@ import 'package:whatsapp_status_saver/app/theme/app_radius.dart';
 import 'package:whatsapp_status_saver/app/theme/app_spacing.dart';
 import 'package:whatsapp_status_saver/app/theme/app_typography.dart';
 
-/// Primary call-to-action button for Keeva.
+/// Primary call-to-action button for WA Status Downloader.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.4:
+/// Implements specification from docs/design/app-component-spec.md Section 2.4:
 /// - Aurora Mint (#10B981) background with dark emerald (#042F2E) text (8.4:1 AAA).
 /// - Guaranteed minimum 48x48dp interactive hit target.
 /// - Deterministic states: Idle, Pressed (scale 0.98), Loading, Disabled.

@@ -16,9 +16,9 @@ enum EmptyScenario {
   momentExpired,
 }
 
-/// Comprehensive empty states for Keeva.
+/// Comprehensive empty states for WA Status Downloader.
 ///
-/// Implements the 7 scenarios from docs/design/keeva-ui-spec.md Screen F.
+/// Implements the 7 scenarios from docs/design/app-ui-spec.md Screen F.
 class EmptyState extends StatelessWidget {
   final EmptyScenario scenario;
   final VoidCallback? onAction;

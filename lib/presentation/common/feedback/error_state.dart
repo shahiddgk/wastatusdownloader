@@ -11,7 +11,7 @@ import '../buttons/secondary_button.dart';
 
 /// Calm, human-friendly error and recovery component.
 ///
-/// Implements specification from docs/design/keeva-ui-spec.md Screen G:
+/// Implements specification from docs/design/app-ui-spec.md Screen G:
 /// - Never exposes raw technical exceptions or stack traces.
 class ErrorState extends StatelessWidget {
   final String title;

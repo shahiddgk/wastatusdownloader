@@ -5,10 +5,10 @@ import 'package:whatsapp_status_saver/app/theme/app_radius.dart';
 import 'package:whatsapp_status_saver/app/theme/app_spacing.dart';
 import 'package:whatsapp_status_saver/app/theme/app_typography.dart';
 
-/// Toast and transient notification helper for Keeva.
+/// Toast and transient notification helper for WA Status Downloader.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.18.
-abstract final class KeevaToast {
+/// Implements specification from docs/design/app-component-spec.md Section 2.18.
+abstract final class AppToast {
   /// Displays a floating snackbar anchored above the navigation bar.
   static void show(
     BuildContext context, {

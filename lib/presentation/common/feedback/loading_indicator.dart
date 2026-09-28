@@ -6,9 +6,9 @@ import 'package:whatsapp_status_saver/app/theme/app_radius.dart';
 
 import '../media/media_placeholder.dart';
 
-/// Loading indicator components for Keeva.
+/// Loading indicator components for WA Status Downloader.
 ///
-/// Implements specification from docs/design/keeva-component-spec.md Section 2.12:
+/// Implements specification from docs/design/app-component-spec.md Section 2.12:
 /// - CircularSpinner: 24dp or 40dp indeterminate in Aurora Mint (#10B981)
 /// - ShimmerCard: 9:16 aspect ratio placeholder with subtle shimmer (disabled in reduced motion)
 /// - LinearProgressBar: 2dp non-destructive top refresh line

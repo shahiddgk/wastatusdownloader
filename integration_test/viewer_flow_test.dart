@@ -55,7 +55,7 @@ void main() {
     isSaved: false,
   );
 
-  group('Keeva End-to-End Media Viewer Integration Test', () {
+  group('WA Status Downloader End-to-End Media Viewer Integration Test', () {
     testWidgets(
       'Open viewer from moments, toggle chrome, view info sheet, and navigate back',
       (tester) async {
@@ -71,7 +71,7 @@ void main() {
                 ),
               ),
             ],
-            child: const KeevaApp(),
+            child: const StatusSaverApp(),
           ),
         );
         await tester.pumpAndSettle();

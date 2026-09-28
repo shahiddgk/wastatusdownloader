@@ -1,77 +1,50 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 500" width="1024" height="500">
   <defs>
-    <!-- Background Obsidian Gradient -->
-    <linearGradient id="fgBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#141822"/>
-      <stop offset="60%" stop-color="#0E1117"/>
-      <stop offset="100%" stop-color="#090B0E"/>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#032f20"/>
+      <stop offset="0.55" stop-color="#07583a"/>
+      <stop offset="1" stop-color="#021d16"/>
     </linearGradient>
-
-    <!-- Aurora Radial Sheen -->
-    <radialGradient id="fgAurora" cx="70%" cy="40%" r="55%">
-      <stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/>
-      <stop offset="50%" stop-color="#6366F1" stop-opacity="0.12"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    <radialGradient id="glow" cx="75%" cy="48%" r="48%">
+      <stop offset="0" stop-color="#22f36f" stop-opacity="0.44"/>
+      <stop offset="1" stop-color="#22f36f" stop-opacity="0"/>
     </radialGradient>
-
-    <linearGradient id="fgAuroraMark" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34D399"/>
-      <stop offset="45%" stop-color="#10B981"/>
-      <stop offset="100%" stop-color="#6366F1"/>
+    <linearGradient id="download" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e7f8ed"/>
     </linearGradient>
-
-    <linearGradient id="cardGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1E293B"/>
-      <stop offset="100%" stop-color="#0F172A"/>
-    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#00190e" flood-opacity="0.5"/>
+    </filter>
   </defs>
 
-  <rect width="1024" height="500" fill="url(#fgBg)"/>
-  <rect width="1024" height="500" fill="url(#fgAurora)"/>
+  <rect width="1024" height="500" fill="url(#background)"/>
+  <rect width="1024" height="500" fill="url(#glow)"/>
 
-  <!-- Left: Brand Positioning & Headline -->
-  <g transform="translate(80, 150)">
-    <!-- Trust Pill -->
-    <rect width="110" height="28" rx="14" fill="#064E3B" stroke="#10B981" stroke-width="1"/>
-    <circle cx="16" cy="14" r="4" fill="#34D399"/>
-    <text x="28" y="18" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="bold" fill="#A7F3D0" letter-spacing="1">100% PRIVATE</text>
+  <g transform="translate(72 112)">
+    <rect width="188" height="34" rx="17" fill="#b7ff39" fill-opacity="0.14" stroke="#b7ff39" stroke-opacity="0.65"/>
+    <circle cx="20" cy="17" r="5" fill="#b7ff39"/>
+    <text x="36" y="22" fill="#eaffbd" font-family="Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1.2">OFFLINE • ON DEVICE</text>
 
-    <!-- Main Wordmark / Brand -->
-    <text x="0" y="85" font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', sans-serif" font-size="64" font-weight="700" fill="#F9FAFB" letter-spacing="-1">Keeva</text>
-
-    <!-- Emotional Value Proposition -->
-    <text x="0" y="130" font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', sans-serif" font-size="24" font-weight="500" fill="#E5E7EB">Keep the moments that matter.</text>
-    <text x="0" y="165" font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="400" fill="#9CA3AF">A calm, private keeper for temporary status media.</text>
+    <text x="0" y="104" fill="#ffffff" font-family="Arial, sans-serif" font-size="54" font-weight="800">WA Status</text>
+    <text x="0" y="163" fill="#ffffff" font-family="Arial, sans-serif" font-size="54" font-weight="800">Downloader</text>
+    <text x="0" y="211" fill="#d7eee2" font-family="Arial, sans-serif" font-size="22" font-weight="500">Browse and save viewed statuses.</text>
+    <text x="0" y="245" fill="#a8ccba" font-family="Arial, sans-serif" font-size="17">Photos and videos stay on your device.</text>
   </g>
 
-  <!-- Right: Luminous Aperture & Floating Moments Cards -->
-  <g transform="translate(680, 240)">
-    <!-- Ambient Light Ring -->
-    <circle cx="60" cy="0" r="160" fill="none" stroke="#10B981" stroke-opacity="0.15" stroke-width="1.5" stroke-dasharray="8 8"/>
-    <circle cx="60" cy="0" r="210" fill="none" stroke="#6366F1" stroke-opacity="0.10" stroke-width="1.5"/>
+  <g transform="translate(694 70)" filter="url(#shadow)">
+    <circle cx="150" cy="180" r="143" fill="#078446" stroke="#53ff79" stroke-opacity="0.4" stroke-width="3"/>
+    <path d="M52 102 C15 148 12 225 51 276 L36 326 L92 305 C133 328 191 330 235 305"
+          fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M99 63 C139 41 194 41 235 65" fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round"/>
+    <path d="M252 78 C272 100 286 127 290 157" fill="none" stroke="#b7ff39" stroke-width="22" stroke-linecap="round"/>
+    <path d="M292 201 C287 246 269 278 239 303" fill="none" stroke="#b7ff39" stroke-width="22" stroke-linecap="round"/>
 
-    <!-- Tilted Back Card -->
-    <g transform="translate(-40, -110) rotate(-10)">
-      <rect width="130" height="200" rx="18" fill="url(#cardGrad1)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
-      <circle cx="65" cy="70" r="24" fill="#6366F1" fill-opacity="0.4"/>
-    </g>
+    <circle cx="157" cy="184" r="88" fill="#09d853"/>
+    <path d="M143 125 h30 v78 h36 l-51 55 -51-55 h36 z" fill="url(#download)"/>
+    <path d="M116 260 v15 q0 19 19 19 h47 q19 0 19-19 v-15" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round"/>
 
-    <!-- Front Hero Card -->
-    <g transform="translate(40, -90) rotate(8)">
-      <rect width="140" height="215" rx="20" fill="#161A22" stroke="rgba(255,255,255,0.22)" stroke-width="2"/>
-      <circle cx="70" cy="75" r="26" fill="#10B981" fill-opacity="0.5"/>
-      <!-- Kept Pill -->
-      <g transform="translate(80, 14)">
-        <rect width="44" height="22" rx="11" fill="#10B981"/>
-        <path d="M 12 11 L 18 16 L 32 7" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
-      </g>
-      <!-- Bottom Label -->
-      <rect x="14" y="180" width="60" height="20" rx="6" fill="#000000" fill-opacity="0.7"/>
-      <text x="22" y="194" font-family="sans-serif" font-size="10" font-weight="bold" fill="#F9FAFB">0:24</text>
-    </g>
-
-    <!-- Central Spark Floating in Between -->
-    <circle cx="50" cy="10" r="8" fill="#FFFFFF"/>
-    <circle cx="50" cy="10" r="24" fill="#10B981" fill-opacity="0.4"/>
+    <circle cx="260" cy="79" r="53" fill="#078446" stroke="#ffffff" stroke-width="10"/>
+    <path d="M247 52 l39 27 -39 27 z" fill="#ffffff"/>
   </g>
 </svg>

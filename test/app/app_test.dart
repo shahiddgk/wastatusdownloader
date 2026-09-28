@@ -67,11 +67,11 @@ void main() {
           () => MockStatusListNotifier(StatusListSuccess(items: items)),
         ),
       ],
-      child: const KeevaApp(),
+      child: const StatusSaverApp(),
     );
   }
 
-  group('Phase 2E-B8: KeevaApp Top-Level Integration', () {
+  group('Phase 2E-B8: StatusSaverApp Top-Level Integration', () {
     testWidgets(
       'renders PermissionOnboardingScreen when access is not granted',
       (tester) async {
