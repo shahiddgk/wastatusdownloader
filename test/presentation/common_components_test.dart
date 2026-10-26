@@ -313,8 +313,11 @@ void main() {
         await tester.pumpWidget(buildTestable(const PermissionGuide()));
 
         expect(find.text('1. View statuses in WhatsApp'), findsOneWidget);
-        expect(find.text('2. Tap Connect Folder below'), findsOneWidget);
-        expect(find.text('3. Tap "Use this folder"'), findsOneWidget);
+        expect(find.text('2. Tap Allow access'), findsOneWidget);
+        expect(find.text('3. Allow access and return'), findsOneWidget);
+        expect(find.textContaining('load automatically'), findsOneWidget);
+        expect(find.textContaining('Connect Folder'), findsNothing);
+        expect(find.textContaining('Use this folder'), findsNothing);
         expect(
           find.text('100% On-Device • Zero Network • Private'),
           findsOneWidget,

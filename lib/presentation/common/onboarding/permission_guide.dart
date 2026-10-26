@@ -8,7 +8,7 @@ import 'package:whatsapp_status_saver/app/theme/app_typography.dart';
 
 import 'permission_step.dart';
 
-/// The 3-step structured visual guide explaining Android SAF folder access.
+/// The three-step visual guide explaining Android file access permission.
 ///
 /// Implements specification from docs/design/app-component-spec.md Section 2.15
 /// and docs/design/app-ui-spec.md Screen A.
@@ -39,14 +39,15 @@ class PermissionGuide extends StatelessWidget {
         const SizedBox(height: AppSpacing.space12),
         const PermissionStep(
           stepNumber: 2,
-          title: '2. Tap Connect Folder below',
-          description: 'This opens the Android system file selector directly to the WhatsApp media folder.',
+          title: '2. Tap Allow access',
+          description:
+              'Android will ask for file access to find your viewed statuses.',
         ),
         const SizedBox(height: AppSpacing.space12),
         const PermissionStep(
           stepNumber: 3,
-          title: '3. Tap "Use this folder"',
-          description: 'Confirm access by tapping the blue button at the bottom of the Android picker.',
+          title: '3. Allow access and return',
+          description: 'Enable the requested file access, then return here. Viewed statuses load automatically.',
           isHighlighted: true,
         ),
         const SizedBox(height: AppSpacing.space16),

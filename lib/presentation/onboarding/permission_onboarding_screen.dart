@@ -42,6 +42,14 @@ class PermissionOnboardingScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(message, textAlign: TextAlign.center),
+                if (access is! AccessUnavailable) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'If All files access opens, enable the switch and return here.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
                 const SizedBox(height: 24),
                 NeonButton(
                   label: busy ? 'Checking access…' : 'Allow access',

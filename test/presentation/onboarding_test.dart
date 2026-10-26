@@ -60,9 +60,15 @@ void main() {
 
       expect(find.text('Allow access'), findsOneWidget);
       expect(find.textContaining('automatically'), findsOneWidget);
+      expect(
+        find.text(
+          'If All files access opens, enable the switch and return here.',
+        ),
+        findsOneWidget,
+      );
       expect(find.textContaining('Use this folder'), findsNothing);
 
-      // Tapping Connect triggers requestAccess()
+      // Tapping Allow access triggers requestAccess().
       await tester.tap(find.text('Allow access'));
       await tester.pump();
       expect(mock.requested, isTrue);
