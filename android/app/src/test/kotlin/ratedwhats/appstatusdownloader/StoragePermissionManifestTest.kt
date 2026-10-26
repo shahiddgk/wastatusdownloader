@@ -1,6 +1,8 @@
 package ratedwhats.appstatusdownloader
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.w3c.dom.Document
 import org.w3c.dom.Element
@@ -24,36 +26,39 @@ class StoragePermissionManifestTest {
         }.newDocumentBuilder().parse(file)
     }
 
-    private fun permission(document: Document, name: String): Element {
+    private fun permissions(document: Document, name: String): List<Element> {
         val declarations = document.getElementsByTagName("uses-permission")
-        val matching = (0 until declarations.length).map { declarations.item(it) as Element }
+        return (0 until declarations.length).map { declarations.item(it) as Element }
             .filter { it.getAttributeNS(androidNamespace, "name") == name }
-        assertEquals("$name must be declared exactly once", 1, matching.size)
-        val declaration = matching.single()
-        val mergeAction = declaration.getAttributeNS(toolsNamespace, "node")
-        assertFalse("$name must not be removed during manifest merging",
-            mergeAction == "remove" || mergeAction == "removeAll")
-        return declaration
     }
 
-    @Test fun declaresAllFilesAccessForAndroid11AndLater() {
-        val permission = permission(manifest(), "android.permission.MANAGE_EXTERNAL_STORAGE")
-        assertFalse("All files access must remain available on newer Android versions",
-            permission.hasAttributeNS(androidNamespace, "maxSdkVersion"))
+    @Test fun removesAllFilesAccessDuringManifestMerging() {
+        val permissions = permissions(manifest(), "android.permission.MANAGE_EXTERNAL_STORAGE")
+        assertEquals("All files access must have one defensive removal rule", 1, permissions.size)
+        assertEquals(
+            "All files access must be removed from the final merged manifest",
+            "remove",
+            permissions.single().getAttributeNS(toolsNamespace, "node")
+        )
     }
 
-    @Test fun declaresLegacyRuntimePermissionsOnlyThroughAndroid10() {
+    @Test fun omitsBroadAndLegacyStoragePermissions() {
         val document = manifest()
-        for (name in listOf("READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE")) {
-            val permission = permission(document, "android.permission.$name")
-            assertEquals("$name is needed by the legacy permission flow through API 29",
-                "29", permission.getAttributeNS(androidNamespace, "maxSdkVersion"))
+        for (name in listOf(
+            "android.permission.READ_EXTERNAL_STORAGE",
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            "android.permission.READ_MEDIA_IMAGES",
+            "android.permission.READ_MEDIA_VIDEO"
+        )) {
+            assertTrue("$name must not be declared for the scoped folder flow", permissions(document, name).isEmpty())
         }
     }
 
-    @Test fun enablesDirectStatusDiscoveryOnAndroid10() {
+    @Test fun doesNotEnableLegacyExternalStorage() {
         val application = manifest().getElementsByTagName("application").item(0) as Element
-        assertEquals("Android 10 needs legacy storage for direct status file discovery",
-            "true", application.getAttributeNS(androidNamespace, "requestLegacyExternalStorage"))
+        assertFalse(
+            "Scoped folder access must not opt out of Android scoped storage",
+            application.hasAttributeNS(androidNamespace, "requestLegacyExternalStorage")
+        )
     }
 }

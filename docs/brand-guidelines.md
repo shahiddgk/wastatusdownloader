@@ -3,10 +3,10 @@
 ## Product names
 
 - Full product name: **WA Status Downloader**
-- Short launcher name: **WA Saver**
+- Launcher name: **WA Status Downloader**
 - Internal application identity: `ratedwhats.appstatusdownloader`
 
-Use the full product name in settings, release notes, documentation, and Android application information. Use the short name only where launcher space is constrained.
+Use the full product name in settings, release notes, documentation, Android application information, and Android and iOS launcher labels.
 
 ## Logo
 

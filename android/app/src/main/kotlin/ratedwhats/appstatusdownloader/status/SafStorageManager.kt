@@ -9,6 +9,7 @@ import android.provider.DocumentsContract
 import android.util.Log
 
 enum class ValidationStatus {
+    NOT_GRANTED,
     VALID,
     VALID_PARENT,
     INVALID,
@@ -25,16 +26,18 @@ data class ValidationResult(
 data class AccessCheckResult(
     val hasAccess: Boolean,
     val treeUri: Uri? = null,
-    val status: ValidationStatus = if (hasAccess) ValidationStatus.VALID else ValidationStatus.INVALID,
+    val status: ValidationStatus = if (hasAccess) ValidationStatus.VALID else ValidationStatus.NOT_GRANTED,
     val resolvedStatusesDocId: String? = null,
-    val targetPackage: String = "com.whatsapp"
+    val targetPackage: String = "com.whatsapp",
+    val errorMessage: String? = null
 ) {
     fun toMap(): Map<String, Any?> = mapOf(
         "hasAccess" to hasAccess,
         "treeUri" to treeUri?.toString(),
         "status" to status.name.lowercase(),
         "resolvedStatusesDocId" to resolvedStatusesDocId,
-        "targetPackage" to targetPackage
+        "targetPackage" to targetPackage,
+        "error" to errorMessage
     )
 }
 
@@ -93,10 +96,16 @@ class SafStorageManager(private val context: Context) {
     fun buildInitialUri(targetPackage: String = WHATSAPP_STANDARD): Uri? {
         return try {
             val volumeId = resolveActiveVolumeId()
-            val relativePath = if (targetPackage == WHATSAPP_BUSINESS) {
-                "Android/media/com.whatsapp.w4b/WhatsApp Business/Media"
+            val relativePath = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (targetPackage == WHATSAPP_BUSINESS) {
+                    "Android/media/com.whatsapp.w4b/WhatsApp Business/Media"
+                } else {
+                    "Android/media/com.whatsapp/WhatsApp/Media"
+                }
+            } else if (targetPackage == WHATSAPP_BUSINESS) {
+                "WhatsApp Business/Media"
             } else {
-                "Android/media/com.whatsapp/WhatsApp/Media"
+                "WhatsApp/Media"
             }
             val docId = "$volumeId:$relativePath"
             DocumentsContract.buildDocumentUri(EXTERNAL_STORAGE_PROVIDER, docId)
@@ -123,21 +132,18 @@ class SafStorageManager(private val context: Context) {
         }
     }
 
-    /**
-     * Takes persistable read permission on the granted tree URI and records it per package.
-     */
-    fun takePersistablePermission(treeUri: Uri, targetPackage: String? = null): Boolean {
+    /** Takes the transient result grant as a persisted, read-only grant. */
+    fun takePersistableReadPermission(treeUri: Uri, resultFlags: Int): Boolean {
         return try {
+            val readFlags = resultFlags and Intent.FLAG_GRANT_READ_URI_PERMISSION
+            if (readFlags != Intent.FLAG_GRANT_READ_URI_PERMISSION) {
+                Log.w(TAG, "The picker did not return a read grant for $treeUri")
+                return false
+            }
             context.contentResolver.takePersistableUriPermission(
                 treeUri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                readFlags
             )
-            val pkg = targetPackage ?: detectPackageFromTreeUri(treeUri)
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            prefs.edit()
-                .putString("tree_uri_$pkg", treeUri.toString())
-                .putString("last_active_package", pkg)
-                .apply()
             true
         } catch (e: Exception) {
             Log.e(TAG, "Failed to take persistable URI permission", e)
@@ -146,22 +152,56 @@ class SafStorageManager(private val context: Context) {
     }
 
     /**
-     * Releases persistable read permission on the tree URI and removes from prefs.
+     * Records a previously validated persisted tree URI. Any prior URI for this
+     * source is released only after the replacement was saved successfully.
      */
-    fun releasePersistablePermission(treeUri: Uri, targetPackage: String? = null): Boolean {
+    fun saveValidatedTreeUri(treeUri: Uri, targetPackage: String): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val key = "tree_uri_$targetPackage"
+        val previousUriString = prefs.getString(key, null)
+        val saved = prefs.edit()
+            .putString(key, treeUri.toString())
+            .putString("last_active_package", targetPackage)
+            .commit()
+        if (!saved) {
+            Log.e(TAG, "Failed to save validated tree URI for $targetPackage")
+            return false
+        }
+
+        if (previousUriString != null && previousUriString != treeUri.toString()) {
+            releasePersistedReadPermission(Uri.parse(previousUriString))
+        }
+        return true
+    }
+
+    /** Releases a persisted read grant without changing stored source metadata. */
+    fun releasePersistedReadPermission(treeUri: Uri): Boolean {
         return try {
             context.contentResolver.releasePersistableUriPermission(
                 treeUri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
-            val pkg = targetPackage ?: detectPackageFromTreeUri(treeUri)
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            prefs.edit()
-                .remove("tree_uri_$pkg")
-                .apply()
             true
         } catch (e: Exception) {
             Log.e(TAG, "Failed to release persistable URI permission", e)
+            false
+        }
+    }
+
+    /**
+     * Releases the user-selected tree and removes its matching saved source metadata.
+     */
+    fun releasePersistablePermission(treeUri: Uri, targetPackage: String): Boolean {
+        val released = releasePersistedReadPermission(treeUri)
+        return try {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val key = "tree_uri_$targetPackage"
+            if (prefs.getString(key, null) == treeUri.toString()) {
+                prefs.edit().remove(key).commit()
+            }
+            released
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to clear stored tree URI", e)
             false
         }
     }
@@ -189,28 +229,26 @@ class SafStorageManager(private val context: Context) {
                 Log.d(TAG, "  persisted[$i]: ${p.uri}")
             }
 
-            if (persistedPerms.isEmpty()) {
-                Log.d(TAG, "  → No persisted URIs found, returning null")
-                return null
-            }
-
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val savedUriString = prefs.getString("tree_uri_$targetPackage", null)
             Log.d(TAG, "  SharedPrefs[tree_uri_$targetPackage] = $savedUriString")
 
             if (savedUriString != null) {
-                // Use STRING comparison, NOT Uri.equals() — Uri equality is encoding-sensitive
-                // and can return false for identical URIs with different percent-encoding.
-                val existsInPerms = persistedPerms.any { it.uri.toString() == savedUriString }
-                Log.d(TAG, "  savedUri exists in Android persisted permissions: $existsInPerms")
-                if (existsInPerms) {
-                    val uri = Uri.parse(savedUriString)
-                    Log.d(TAG, "  → ✓ Returning saved URI from prefs: $uri")
-                    return uri
+                val savedUri = Uri.parse(savedUriString)
+                val matchingPermission = persistedPerms.firstOrNull { permission ->
+                    sameTree(permission.uri, savedUri)
                 }
-                // DO NOT delete the pref here. The URI might still be valid but
-                // Android may have re-encoded it differently. Fall through to fallback scan.
-                Log.w(TAG, "  → savedUri not found in persistedPerms by string match. Falling through to URI scan.")
+                if (matchingPermission != null) {
+                    Log.d(TAG, "  → ✓ Returning saved URI from prefs: ${matchingPermission.uri}")
+                    return matchingPermission.uri
+                }
+                Log.w(TAG, "  → Stored URI is no longer a persisted read grant.")
+                return null
+            }
+
+            if (persistedPerms.isEmpty()) {
+                Log.d(TAG, "  → No persisted URIs found, returning null")
+                return null
             }
 
             // Fallback: scan persisted permissions for a URI that strictly matches only the
@@ -260,8 +298,23 @@ class SafStorageManager(private val context: Context) {
      * Checks existing persisted folder access and validates tree readability for the package.
      */
     fun checkAccess(targetPackage: String = WHATSAPP_STANDARD): AccessCheckResult {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val hasStoredUri = prefs.contains("tree_uri_$targetPackage")
         val treeUri = getPersistedReadTreeUri(targetPackage)
-            ?: return AccessCheckResult(hasAccess = false, targetPackage = targetPackage)
+            ?: return AccessCheckResult(
+                hasAccess = false,
+                status = if (hasStoredUri) {
+                    ValidationStatus.PERMISSION_REVOKED
+                } else {
+                    ValidationStatus.NOT_GRANTED
+                },
+                targetPackage = targetPackage,
+                errorMessage = if (hasStoredUri) {
+                    "The selected folder is no longer available. Connect it again."
+                } else {
+                    "Connect the WhatsApp media folder to continue."
+                }
+            )
 
         val validation = validateTreeUri(treeUri, targetPackage)
         val hasAccess = validation.status == ValidationStatus.VALID || validation.status == ValidationStatus.VALID_PARENT
@@ -271,7 +324,8 @@ class SafStorageManager(private val context: Context) {
             treeUri = if (hasAccess) treeUri else null,
             status = validation.status,
             resolvedStatusesDocId = validation.resolvedStatusesDocId,
-            targetPackage = targetPackage
+            targetPackage = targetPackage,
+            errorMessage = validation.errorMessage
         )
     }
 
@@ -304,18 +358,11 @@ class SafStorageManager(private val context: Context) {
         val expectedPkg = if (isTargetBusiness) WHATSAPP_BUSINESS else WHATSAPP_STANDARD
         val expectedFolderName = if (isTargetBusiness) "WhatsApp Business" else "WhatsApp"
 
-        // Check if root or completely unrelated folder
-        if (normalizedDocId.endsWith(":") || normalizedDocId == "primary" ||
-            normalizedDocId.contains("DCIM", ignoreCase = true) ||
-            normalizedDocId.contains("Download", ignoreCase = true) ||
-            normalizedDocId.contains("Pictures", ignoreCase = true)
-        ) {
-            // Unrelated system folder or root
-            if (!normalizedDocId.contains("WhatsApp", ignoreCase = true) &&
-                !normalizedDocId.contains("media", ignoreCase = true)
-            ) {
-                return ValidationResult(ValidationStatus.INVALID, errorMessage = "Selected folder is not related to WhatsApp")
-            }
+        if (!isExpectedWhatsAppTree(normalizedDocId, expectedPkg, expectedFolderName)) {
+            return ValidationResult(
+                ValidationStatus.INVALID,
+                errorMessage = "Select the WhatsApp Media folder opened by the app."
+            )
         }
 
         // Step 5: Locate .Statuses subfolder
@@ -329,8 +376,14 @@ class SafStorageManager(private val context: Context) {
             }
         }
 
-        // Fallback: bounded recursive traversal from treeDocId to discover .Statuses
-        val discoveredDocId = findStatusesFolderRecursively(treeUri, treeDocId, depth = 0)
+        // Fallback: bounded recursive traversal is deliberately constrained to the
+        // selected WhatsApp package branch. A tree grant for Android/media must not
+        // accidentally resolve a .Statuses folder owned by another app.
+        val searchRootDocId = when {
+            normalizedDocId.endsWith("Android/media") -> "$normalizedDocId/$expectedPkg"
+            else -> treeDocId
+        }
+        val discoveredDocId = findStatusesFolderRecursively(treeUri, searchRootDocId, depth = 0)
         if (discoveredDocId != null) {
             val queryResult = testQueryDocId(treeUri, discoveredDocId)
             if (queryResult != null) {
@@ -338,22 +391,39 @@ class SafStorageManager(private val context: Context) {
             }
         }
 
-        // If tree hierarchy matches WhatsApp ancestors but .Statuses was not discovered
-        val isWhatsAppAncestor = normalizedDocId.contains("WhatsApp", ignoreCase = true) ||
-                normalizedDocId.contains(expectedPkg, ignoreCase = true) ||
-                normalizedDocId.endsWith("Android/media", ignoreCase = true)
+        return ValidationResult(
+            ValidationStatus.UNAVAILABLE,
+            errorMessage = "WhatsApp status folder not found. View a status in WhatsApp first."
+        )
+    }
 
-        return if (isWhatsAppAncestor) {
-            ValidationResult(
-                ValidationStatus.UNAVAILABLE,
-                errorMessage = "WhatsApp status folder not found. View a status in WhatsApp first."
-            )
-        } else {
-            ValidationResult(
-                ValidationStatus.INVALID,
-                errorMessage = "Selected folder does not contain WhatsApp media."
-            )
+    private fun sameTree(first: Uri, second: Uri): Boolean =
+        first.toString() == second.toString() || try {
+            first.authority == second.authority &&
+                DocumentsContract.getTreeDocumentId(first) == DocumentsContract.getTreeDocumentId(second)
+        } catch (_: Exception) {
+            false
         }
+
+    private fun isExpectedWhatsAppTree(
+        documentId: String,
+        expectedPackage: String,
+        expectedFolderName: String
+    ): Boolean {
+        val relativePath = documentId.substringAfter(':', "").trim('/')
+        if (relativePath.isEmpty()) return false
+
+        val acceptedRoots = listOf(
+            "Android/media",
+            "Android/media/$expectedPackage",
+            "Android/media/$expectedPackage/$expectedFolderName",
+            "Android/media/$expectedPackage/$expectedFolderName/Media",
+            "Android/media/$expectedPackage/$expectedFolderName/Media/.Statuses",
+            expectedFolderName,
+            "$expectedFolderName/Media",
+            "$expectedFolderName/Media/.Statuses"
+        )
+        return relativePath in acceptedRoots
     }
 
     private fun resolveCandidateStatusesDocId(

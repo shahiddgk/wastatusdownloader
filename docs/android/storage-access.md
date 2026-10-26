@@ -1,11 +1,11 @@
-> Historical SAF design. The current direct-install APK uses the permission-only flow described in [decision 007](../decisions/007-permission-only-status-access.md). It requests broad Android file access and scans known status and saved-media directories. Previous scoped-permission claims below describe the earlier build.
+> Current Play-release design. The app supports Android 10/API 29 and newer, asks the user once to connect the WhatsApp Media folder through Android's system picker, and persists that scoped read grant. The picker is pre-seeded to WhatsApp Media when the device permits it; the user confirms **Use this folder** and then **Allow**. The release does not request `MANAGE_EXTERNAL_STORAGE`, legacy external-storage permissions, or broad media permissions.
 
 # Android Storage Access
 
 **Document Status:** Complete Architecture & Feasibility Research  
 **Target Platform:** Android (API 29 – 36 / Android 10 – 16)  
 **Primary Authors:** Engineering & Architecture Research  
-**Last Updated:** September 2026  
+**Last Updated:** September 29, 2026
 
 ---
 
@@ -17,7 +17,7 @@ This document evaluates the technical feasibility of building a WhatsApp Status 
 * **Direct File API Access (`java.io.File`) to Statuses:** **NOT POSSIBLE** on Android 11+ (API 30+) due to Scoped Storage and FUSE restrictions on app-specific directories (`/Android/media/` and `/Android/data/`).
 * **MediaStore Discovery for Statuses:** **NOT POSSIBLE**. WhatsApp intentionally stores statuses in a hidden folder (`.Statuses`) with a leading dot and `.nomedia`, which the system `MediaScanner` strictly ignores. MediaStore queries will always return 0 status items.
 * **All Files Access (`MANAGE_EXTERNAL_STORAGE`):** **NOT POSSIBLE** for Google Play distribution. While technically capable on device, Google Play policy strictly rejects status savers attempting to claim broad storage management.
-* **Storage Access Framework (SAF / `ACTION_OPEN_DOCUMENT_TREE`):** **VERIFIED** on Android 11–12 and **VERIFIED on Android 16 (API 36 / Xiaomi HyperOS 3.0)**. Access requires user-granted tree URI permissions via the system file picker (`DocumentsUI`). Physical test on Xiaomi 2311DRK48I confirmed `Android/media/com.whatsapp/WhatsApp/Media` is selectable, unblocked by `FLAG_DIR_BLOCKS_OPEN_DOCUMENT_TREE`, and grants child access to `.Statuses`.
+* **Storage Access Framework (SAF / `ACTION_OPEN_DOCUMENT_TREE`):** The current app flow. Android's system picker is pre-seeded to WhatsApp Media, then the user confirms **Use this folder** and **Allow** once. The app persists a read-only tree URI and verifies it on subsequent launches.
 * **Saving Discovered Media to User's Gallery:** **VERIFIED**. Modern `MediaStore` APIs allow seamless insertion of images and videos into public collections (`Pictures/`, `Movies/`) on Android 10+ (API 29+) with **zero permissions required**.
 * **Kotlin Native Implementation Requirement:** **VERIFIED**. Pure Dart (`dart:io`) cannot handle SAF tree traversal, persistent ContentResolver URI grants, thumbnail decoders, or MediaStore streaming. A native Android Kotlin service behind a platform channel is required.
 
@@ -27,33 +27,12 @@ This document evaluates the technical feasibility of building a WhatsApp Status 
 
 The Android storage architecture has evolved significantly across API versions, shifting from an open shared filesystem to a strict sandbox and capability-based access model:
 
-```
-+-----------------------------------------------------------------------------+
-|                               Android OS                                    |
-+-----------------------------------------------------------------------------+
-|  Legacy (API <= 28)    |  Direct File access across /sdcard with           |
-|                        |  READ/WRITE_EXTERNAL_STORAGE.                      |
-+------------------------+----------------------------------------------------+
-|  Android 10 (API 29)   |  Scoped Storage introduced; opt-out available via  |
-|                        |  requestLegacyExternalStorage="true".               |
-+------------------------+----------------------------------------------------+
-|  Android 11 (API 30)   |  Scoped Storage strictly enforced. Legacy flag     |
-|                        |  ignored. FUSE filesystem layer blocks direct      |
-|                        |  File access to /Android/data and /Android/media.  |
-|                        |  SAF blocks root and Android/data selection.       |
-+------------------------+----------------------------------------------------+
-|  Android 13 (API 33)   |  Granular media permissions introduced.           |
-|                        |  READ_EXTERNAL_STORAGE deprecated/inactive.       |
-|                        |  DocumentsUI restrictions tightened on system paths|
-+------------------------+----------------------------------------------------+
-|  Android 14 (API 34)   |  Selected Photos access introduced                 |
-|                        |  (READ_MEDIA_VISUAL_USER_SELECTED).               |
-+------------------------+----------------------------------------------------+
-|  Android 15 (API 35) & |  Mandatory edge-to-edge; 16 KB page size support;  |
-|  Android 16 (API 36)   |  Photo Picker enforcement for broad media picker;  |
-|                        |  MediaStore version lockdown.                      |
-+-----------------------------------------------------------------------------+
-```
+| App concern | Android 10–16 / API 29–36 implementation |
+|---|---|
+| Status discovery | One persisted, user-approved SAF tree grant to WhatsApp Media |
+| System UI | `ACTION_OPEN_DOCUMENT_TREE`, with an advisory initial URI for WhatsApp Media |
+| Saved copies | App-owned `MediaStore` rows in `Pictures/SavedStatus` or `Movies/SavedStatus` |
+| Broad storage | Not declared: no `MANAGE_EXTERNAL_STORAGE`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `READ_MEDIA_IMAGES`, or `READ_MEDIA_VIDEO` |
 
 ### 1. App-Specific Storage vs. Shared Storage
 * **App-Specific Internal (`/data/user/0/<package>/`):** Accessible only by the owning application. No other app can read this without root privileges.
@@ -61,11 +40,7 @@ The Android storage architecture has evolved significantly across API versions, 
 * **Public Shared Storage (`DCIM/`, `Pictures/`, `Movies/`, `Download/`):** Governed by MediaStore and Storage Access Framework.
 
 ### 2. Status Classification:
-* WhatsApp storage location on modern Android:
-  ```text
-  /storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Media/.Statuses
-  ```
-  *(Legacy location on Android 10 and below: `/storage/emulated/0/WhatsApp/Media/.Statuses`)*
+* WhatsApp's status cache is beneath the WhatsApp Media tree. Android 10 commonly uses `WhatsApp/Media/.Statuses`; Android 11 and newer commonly uses `Android/media/com.whatsapp/WhatsApp/Media/.Statuses`. These locations are used only to guide and validate a SAF tree—not as raw file paths for the app to read.
 * Direct POSIX path access via `java.io.File("/storage/emulated/0/Android/media/com.whatsapp/...")`:
   * **Classification:** **NOT POSSIBLE** (API 30+). Calling `file.listFiles()` or `file.canRead()` returns `null` / `false` or throws `FileNotFoundException` / `SecurityException`.
 
@@ -217,10 +192,10 @@ Upon receiving `selectedTreeUri` from `ACTION_OPEN_DOCUMENT_TREE`, the native la
 - Therefore, the app never relies solely on string matching (`.contains(".Statuses")`). It validates the tree by querying `DocumentsContract.buildChildDocumentsUriUsingTree()` through `ContentResolver`.
 
 
-### 3. Feasibility Classification Across Android Versions
-* **Android 10 and below:** **VERIFIED**. Simple `File("/storage/emulated/0/WhatsApp/Media/.Statuses").listFiles()` works with `READ_EXTERNAL_STORAGE`.
-* **Android 11 – 12 (API 30 – 32):** **VERIFIED**. SAF selection of `Android/media/com.whatsapp/...` functions smoothly with persisted tree URI.
-* **Android 13 – 16 (API 33 – 36):** **LIKELY with platform & OEM constraints**:
+### 3. Feasibility Classification Across Supported Android Versions
+* **Android 10 (API 29):** The supported release uses a SAF tree grant for WhatsApp Media; it does not opt into legacy raw-file access.
+* **Android 11 – 12 (API 30 – 32):** SAF selection of `Android/media/com.whatsapp/...` functions with a persisted tree URI.
+* **Android 13 – 16 (API 33 – 36):** SAF remains the supported path, with platform and OEM constraints:
   * **AOSP Baseline:** In stock AOSP `ExternalStorageProvider.java`, `shouldBlockDirectoryFromTree()` explicitly blocks `Android/data/`, `Android/obb/`, and `Android/sandbox/`. It does **not** block `Android/media/`.
   * **OEM Variations & Google Files Updates:** Some device vendors (and certain Google Play System updates to `com.google.android.documentsui`) have expanded the block rule or grayed out "Use this folder" for any subdirectory inside `/Android/`, returning the message: *"To protect your privacy, choose another folder"*.
   * **Targeting the Parent:** Requesting access to `Android/media/com.whatsapp/WhatsApp/Media` (the parent of `.Statuses`) is generally more reliable than requesting `.Statuses` directly, because `.Statuses` is hidden and invisible unless "Show hidden files" is toggled on in the system picker. Once access to `WhatsApp/Media` is granted, the app can programmatically query the hidden `.Statuses` subfolder via `DocumentsContract`.
@@ -276,9 +251,7 @@ Upon receiving `selectedTreeUri` from `ACTION_OPEN_DOCUMENT_TREE`, the native la
 
 | Android Version | API Level | Status Discovery Permission | Media Saving Permission | Mechanism |
 |---|---|---|---|---|
-| **Android 10 & below** | 28 – 29 | `READ_EXTERNAL_STORAGE` | `WRITE_EXTERNAL_STORAGE` | Runtime Permission + File API |
-| **Android 11 – 12L** | 30 – 32 | None (SAF Tree Grant) | None (MediaStore API) | User Action via SAF `DocumentsUI` |
-| **Android 13 – 16** | 33 – 36 | None (SAF Tree Grant) | None (MediaStore API) | User Action via SAF `DocumentsUI` |
+| **Android 10 – 16** | 29 – 36 | Read-only persisted SAF tree grant | None | One-time `DocumentsUI` confirmation; `MediaStore` export |
 
 ### 2. Why `READ_MEDIA_IMAGES` / `READ_MEDIA_VIDEO` are NOT Applicable
 * **Classification:** **VERIFIED**.
@@ -288,9 +261,9 @@ Upon receiving `selectedTreeUri` from `ACTION_OPEN_DOCUMENT_TREE`, the native la
 * Granting or denying `READ_MEDIA_IMAGES` has **zero effect** on an app's ability to read files inside WhatsApp's private `.Statuses` folder.
 
 ### 3. All Files Access (`MANAGE_EXTERNAL_STORAGE`)
-* **Classification:** **VERIFIED** on device / **NOT POSSIBLE** on Google Play.
-* Declaring `MANAGE_EXTERNAL_STORAGE` in the manifest and directing the user to `Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION` grants direct POSIX `File` access to `/Android/media/com.whatsapp/`.
-* However, submitting an app with this permission to Google Play will cause immediate app rejection (see [Google Play Considerations](#google-play-considerations)).
+* **Classification:** Rejected alternative for this Play-distributed app.
+* The release deliberately does not declare this permission. Its manifest contains a merge-removal rule so a dependency cannot add it accidentally.
+* Status discovery is limited to the user-selected WhatsApp Media tree instead of receiving operating-system-wide file access.
 
 ---
 
@@ -333,9 +306,7 @@ val cursor = context.contentResolver.query(
 ### 3. Taking Persistable URI Permissions
 URI permissions granted by an activity result are temporary by default. To retain access when the app is closed or the device reboots:
 ```kotlin
-val takeFlags: Int = intent.flags and (
-    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-)
+val takeFlags = intent.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION
 context.contentResolver.takePersistableUriPermission(treeUri, takeFlags)
 ```
 
@@ -456,25 +427,20 @@ In compliance with `AGENTS.md` (Section 5, 10, 11, 12), the UI must not know any
 
 ---
 
-## Recommended Approach
+## Current Release Approach
 
-### Step 1: Hybrid Dual-Path Discovery Strategy
-1. **Detect Android OS Version:**
-   * If `SDK_INT <= 29` (Android 10 and below): Use legacy direct `File` discovery (`/WhatsApp/Media/.Statuses`) with `READ_EXTERNAL_STORAGE`.
-   * If `SDK_INT >= 30` (Android 11 – 16): Use Storage Access Framework (`ACTION_OPEN_DOCUMENT_TREE`).
-
-2. **Smart SAF Target Selection:**
+1. **Smart SAF Target Selection:**
    * Do **not** ask the user to pick `.Statuses` directly (avoids "hidden file" confusion).
    * Request permission for the parent directory:
      `Android/media/com.whatsapp/WhatsApp/Media`
-   * Pre-seed `DocumentsContract.EXTRA_INITIAL_URI` pointing to this directory so the picker opens directly at the target folder.
+   * Pre-seed `DocumentsContract.EXTRA_INITIAL_URI` pointing to this directory so the system picker opens at WhatsApp Media when the device honors the advisory hint.
    * Provide a 1-screen visual onboarding guide illustrating the exact button ("Use this folder" -> "Allow") before opening the system picker.
 
-3. **Query via Native ContentResolver:**
+2. **Query via Native ContentResolver:**
    * Traverse the granted tree URI to find the `.Statuses` child directory.
    * Query the child documents via native Cursor with projection to retrieve metadata.
 
-4. **Zero-Permission Export via MediaStore:**
+3. **Zero-Permission Export via MediaStore:**
    * Save images to `MediaStore.Images.Media.EXTERNAL_CONTENT_URI` (`Pictures/SavedStatus`).
    * Save videos to `MediaStore.Video.Media.EXTERNAL_CONTENT_URI` (`Movies/SavedStatus`).
    * No runtime storage permission required.
@@ -545,4 +511,3 @@ In compliance with `AGENTS.md` (Section 5, 10, 11, 12), the UI must not know any
 
 ### Final Verdict
 **SAF STATUS ACCESS: VERIFIED**
-

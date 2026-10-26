@@ -8,9 +8,9 @@ The app does not upload media, filenames, labels, usage events, or device identi
 
 ## Android storage access
 
-The current direct-install build requests Android All files access on Android 11 and newer. This is a broad operating-system grant. Application code limits discovery to known WhatsApp and WhatsApp Business status locations plus the app's saved-media folders.
+On Android 10 (API 29) and newer, the app opens Android's system folder picker directed toward WhatsApp Media when the user chooses to connect status discovery. The user taps **Use this folder**, then **Allow**, once. Android persists a read-only grant for the selected WhatsApp Media tree so the app can find status documents on later launches.
 
-On older supported Android versions, the app requests the legacy storage permissions needed for the same functions. Users can revoke access from Android App Info.
+The app does not request `MANAGE_EXTERNAL_STORAGE`, legacy read/write external-storage permissions, or broad media-library permissions. Users can revoke the selected-folder grant at any time and the app will ask them to reconnect before scanning again.
 
 ## Local data
 
@@ -22,6 +22,12 @@ On older supported Android versions, the app requests the legacy storage permiss
 
 ## Store declarations
 
-Google Play restricts `MANAGE_EXTERNAL_STORAGE`. Publishing this build on Google Play requires an eligible core use case and an approved permission declaration, or a storage implementation that avoids the permission.
+The Android release uses a user-selected, persisted Storage Access Framework folder grant instead of All files access. Its store disclosure should explain the one-time WhatsApp Media connection accurately and must match the final uploaded AAB.
 
-No data is collected or shared through a remote service by the current application.
+Media and user-entered labels are not collected or shared by this application.
+
+## Google Play updates
+
+Google Play checks for eligible app updates and handles their download and installation in its own process. Google Play may process device and app metadata for this purpose under Google's terms; this app does not send media or user-entered labels to Google Play. Consult [Google's In-App Updates data safety disclosure](https://developer.android.com/guide/playcore/in-app-updates#data-safety) when completing store declarations.
+
+The required update version is stored in app-private preferences. An update becomes mandatory only after Google Play reports it as available to the current user. Once detected, the requirement remains until that version or a newer version is installed. The first check may allow offline use if no required update is known.

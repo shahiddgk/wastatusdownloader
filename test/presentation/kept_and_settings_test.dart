@@ -176,7 +176,7 @@ void main() {
             mockAccessNotifier: MockAccessNotifier(const AccessGranted()),
           ),
         );
-        expect(find.text('Allowed'), findsOneWidget);
+        expect(find.text('WhatsApp Media connected'), findsOneWidget);
         expect(find.text('Original Bitrate Preservation'), findsNothing);
         expect(find.textContaining('Encryption'), findsNothing);
         await tester.tap(find.text('Dark theme'));
@@ -188,9 +188,24 @@ void main() {
         await tester.pumpWidget(
           buildTestable(const SettingsScreen(), mockAccessNotifier: mock),
         );
+        expect(find.text('Connect WhatsApp Media'), findsOneWidget);
         await tester.tap(find.text('Status access'));
         expect(mock.requested, isTrue);
       });
+
+      testWidgets(
+        'allows an existing WhatsApp Media connection to be changed',
+        (tester) async {
+          final mock = MockAccessNotifier(const AccessGranted());
+          await tester.pumpWidget(
+            buildTestable(const SettingsScreen(), mockAccessNotifier: mock),
+          );
+
+          await tester.tap(find.text('Status access'));
+
+          expect(mock.requested, isTrue);
+        },
+      );
 
       testWidgets(
         'Saved uses saved copies even when current statuses are empty',

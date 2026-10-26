@@ -24,15 +24,22 @@ class PermissionStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final colors =
+        theme.extension<AppColorsExtension>() ?? AppColorsExtension.dark;
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space16),
       decoration: BoxDecoration(
-        color: AppColors.darkSurfaceLevel1,
+        color: isHighlighted
+            ? scheme.primary.withValues(alpha: 0.09)
+            : colors.surfaceLevel1,
         borderRadius: AppRadius.borderMd,
         border: Border.all(
           color: isHighlighted
-              ? AppColors.darkPrimary
-              : AppColors.darkBorderSubtle,
+              ? scheme.primary.withValues(alpha: 0.72)
+              : colors.borderSubtle,
           width: isHighlighted ? 1.5 : 1.0,
         ),
       ),
@@ -43,18 +50,14 @@ class PermissionStep extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: isHighlighted
-                  ? AppColors.darkPrimary
-                  : AppColors.darkSurfaceLevel2,
+              color: isHighlighted ? scheme.primary : colors.surfaceLevel2,
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 '$stepNumber',
                 style: AppTypography.labelMedium.copyWith(
-                  color: isHighlighted
-                      ? AppColors.darkOnPrimary
-                      : AppColors.darkTextPrimary,
+                  color: isHighlighted ? scheme.onPrimary : scheme.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -68,7 +71,7 @@ class PermissionStep extends StatelessWidget {
                 Text(
                   title,
                   style: AppTypography.titleMedium.copyWith(
-                    color: AppColors.darkTextPrimary,
+                    color: scheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -76,7 +79,7 @@ class PermissionStep extends StatelessWidget {
                 Text(
                   description,
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.darkTextSecondary,
+                    color: scheme.onSurface.withValues(alpha: 0.72),
                   ),
                 ),
               ],

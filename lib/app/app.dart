@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,6 +7,10 @@ import 'dart:async';
 
 import '../application/access/access_state.dart';
 import '../application/providers.dart';
+import '../application/updates/required_update_controller.dart';
+import '../platform/play_update_platform.dart';
+import '../presentation/updates/required_update_gate.dart';
+import '../presentation/updates/required_update_navigation_observer.dart';
 import '../domain/entities/status_item.dart';
 import '../presentation/kept/kept_vault_screen.dart';
 import '../presentation/moments/moments_screen.dart';
@@ -26,7 +31,9 @@ enum AppThemeChoice { system, light, dark }
 /// - Transitions to [AppShell] hosting Moments, Kept Vault, and Settings once granted.
 /// - Manages full-screen [MediaViewerScreen] transitions with 300ms smooth transition.
 class StatusSaverApp extends ConsumerStatefulWidget {
-  const StatusSaverApp({super.key});
+  const StatusSaverApp({super.key, this.updateController});
+
+  final RequiredUpdateController? updateController;
 
   @override
   ConsumerState<StatusSaverApp> createState() => _StatusSaverAppState();
@@ -39,11 +46,25 @@ class _StatusSaverAppState extends ConsumerState<StatusSaverApp>
   ThemeMode _themeMode = ThemeMode.system;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   Timer? _statusRefreshTimer;
+  RequiredUpdateController? _updateController;
+  RequiredUpdateNavigationObserver? _updateNavigationObserver;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _updateController = widget.updateController;
+    if (_updateController == null &&
+        !kIsWeb &&
+        defaultTargetPlatform == TargetPlatform.android) {
+      _updateController = RequiredUpdateController(PlayUpdatePlatform());
+    }
+    final updateController = _updateController;
+    if (updateController != null) {
+      _updateNavigationObserver = RequiredUpdateNavigationObserver(
+        updateController,
+      );
+    }
     _loadThemePreference();
     // Verify storage access on startup
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -76,6 +97,8 @@ class _StatusSaverAppState extends ConsumerState<StatusSaverApp>
   @override
   void dispose() {
     _stopStatusRefreshTimer();
+    _updateNavigationObserver?.dispose();
+    if (widget.updateController == null) _updateController?.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -212,11 +235,20 @@ class _StatusSaverAppState extends ConsumerState<StatusSaverApp>
 
     return MaterialApp(
       navigatorKey: _navigatorKey,
+      navigatorObservers: [?_updateNavigationObserver],
       title: 'WA Status Downloader',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _themeMode,
+      builder: (context, child) {
+        final controller = _updateController;
+        if (controller == null) return child ?? const SizedBox.shrink();
+        return RequiredUpdateGate(
+          controller: controller,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       home: content,
     );
   }

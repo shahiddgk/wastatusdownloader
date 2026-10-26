@@ -1,9 +1,9 @@
 # App identity, launcher artwork, and status labels
 
 The application ID and Kotlin namespace are `ratedwhats.appstatusdownloader`.
-The iOS bundle ID uses the same value. The Android launcher activity and iOS
-home-screen label use **WA Saver**; Android application information retains
-the longer **WA Status Downloader** name.
+The iOS bundle ID uses the same value. The Android launcher activity, Android
+application information, and iOS home-screen label all use
+**WA Status Downloader**.
 
 Changing the Android application ID creates a separate installed application.
 An installation of `offline.wastatus.downloader` is not upgraded or removed.

@@ -38,7 +38,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Private & Local-First'), findsOneWidget);
         expect(
-          find.textContaining('system\'s all-files access setting'),
+          find.textContaining('WhatsApp Media folder you connect once'),
           findsOneWidget,
         );
         expect(find.text('WA Status Downloader'), findsOneWidget);

@@ -44,35 +44,55 @@ void main() {
   }
 
   group('Phase 2E-B4: PermissionOnboardingScreen', () {
-    testWidgets('requests access with one button and no folder instructions', (
-      tester,
-    ) async {
-      tester.view.devicePixelRatio = 1.0;
-      tester.view.physicalSize = const Size(800, 1200);
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+    testWidgets(
+      'explains the one-time WhatsApp Media connection and requests it',
+      (tester) async {
+        tester.view.devicePixelRatio = 1.0;
+        tester.view.physicalSize = const Size(800, 1200);
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      final mock = MockAccessNotifier(const AccessInitial());
+        final mock = MockAccessNotifier(const AccessInitial());
 
-      await tester.pumpWidget(buildTestable(mockNotifier: mock));
+        await tester.pumpWidget(buildTestable(mockNotifier: mock));
 
-      expect(find.text('Allow access'), findsOneWidget);
-      expect(find.textContaining('automatically'), findsOneWidget);
-      expect(
-        find.text(
-          'If All files access opens, enable the switch and return here.',
-        ),
-        findsOneWidget,
-      );
-      expect(find.textContaining('Use this folder'), findsNothing);
+        expect(
+          find.text(
+            'We take you straight to WhatsApp Media. You only confirm the connection once.',
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const Key('whatsapp_media_folder_card')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const Key('whatsapp_media_folder_preview')),
+          findsOneWidget,
+        );
+        expect(find.text('ONE-TIME SETUP'), findsOneWidget);
+        expect(find.text('WhatsApp Media'), findsOneWidget);
+        expect(find.text('Android opens this for you'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(const Key('connect_whatsapp_media_button')),
+            matching: find.text('Connect WhatsApp Media'),
+          ),
+          findsOneWidget,
+        );
+        expect(find.textContaining('Use this folder'), findsOneWidget);
+        expect(find.textContaining('All files'), findsNothing);
 
-      // Tapping Allow access triggers requestAccess().
-      await tester.tap(find.text('Allow access'));
-      await tester.pump();
-      expect(mock.requested, isTrue);
-    });
+        // Tapping the scoped-folder CTA triggers requestAccess().
+        await tester.tap(
+          find.byKey(const Key('connect_whatsapp_media_button')),
+        );
+        await tester.pump();
+        expect(mock.requested, isTrue);
+      },
+    );
 
     testWidgets('displays loading state on CTA during AccessRequesting', (
       tester,
@@ -89,6 +109,7 @@ void main() {
       await tester.pumpWidget(buildTestable(mockNotifier: mock));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.text('Opening WhatsApp Media…'), findsOneWidget);
       // Button should be disabled during loading
       await tester.tap(find.byType(CircularProgressIndicator));
       expect(mock.requested, isFalse);
@@ -110,7 +131,12 @@ void main() {
 
       await tester.pumpWidget(buildTestable(mockNotifier: mock));
 
-      expect(find.text('Allow access to see your statuses.'), findsOneWidget);
+      expect(
+        find.text(
+          'Your connection needs to be refreshed. Reconnect WhatsApp Media to see statuses.',
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('displays error banner on AccessFailure state', (tester) async {
@@ -128,7 +154,7 @@ void main() {
       await tester.pumpWidget(buildTestable(mockNotifier: mock));
 
       expect(
-        find.text('Could not get access. Please try again.'),
+        find.text('We could not connect WhatsApp Media. Please try again.'),
         findsOneWidget,
       );
     });
@@ -176,8 +202,31 @@ void main() {
       container
           .read(selectedTargetPackageProvider.notifier)
           .selectPackage('com.whatsapp.w4b');
-      await tester.tap(find.text('Allow access'));
+      await tester.tap(find.byKey(const Key('connect_whatsapp_media_button')));
       expect(mock.requestedPackage, 'com.whatsapp.w4b');
+    });
+
+    testWidgets('keeps the connect action visible on a short phone', (
+      tester,
+    ) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(360, 520);
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        buildTestable(mockNotifier: MockAccessNotifier()),
+      );
+
+      final button = find.byKey(const Key('connect_whatsapp_media_button'));
+      expect(button, findsOneWidget);
+      expect(
+        tester.getRect(button).bottom,
+        lessThanOrEqualTo(tester.view.physicalSize.height),
+      );
+      expect(tester.takeException(), isNull);
     });
   });
 }

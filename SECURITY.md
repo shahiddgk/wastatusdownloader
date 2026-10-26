@@ -10,13 +10,14 @@ WA Status Downloader processes status media locally.
 
 - The Android manifest does not declare `android.permission.INTERNET`.
 - The app includes no advertising, analytics, or remote crash reporting SDK.
-- The direct-install Android build requests `MANAGE_EXTERNAL_STORAGE` on Android 11 and newer. The scanner limits its own work to known WhatsApp status locations and the app's saved-media locations.
-- Android 10 and older supported versions use scoped legacy read and write permissions.
+- Android 10 (API 29) and newer are supported. The user connects WhatsApp Media once through Android's system folder picker, which is directed toward that location.
+- The app persists only Android's read-only, user-selected folder grant and scans status documents through that scoped grant.
+- The manifest does not request `MANAGE_EXTERNAL_STORAGE`, legacy read/write external-storage permissions, or broad media-library permissions.
 - Saved media is written through MediaStore.
 - Platform paths stay inside the native Android layer; Flutter receives opaque media identifiers.
 - Original status files are not deleted or modified.
 
-Android's All files access grant is broad at the operating-system level. Users can revoke it from Android App Info at any time.
+The user can revoke or replace the folder connection through Android at any time. If it is revoked, the app asks the user to reconnect before it can discover statuses again.
 
 ## Reporting a vulnerability
 

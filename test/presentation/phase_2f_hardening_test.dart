@@ -464,7 +464,7 @@ void main() {
         expect(find.text('Private & Local-First'), findsOneWidget);
         expect(find.byIcon(AppIcons.privacyShield), findsOneWidget);
         expect(
-          find.textContaining('WA Status Downloader scans'),
+          find.textContaining('WA Status Downloader reads statuses only'),
           findsOneWidget,
         );
         expect(find.text('WA Status Downloader'), findsNothing);

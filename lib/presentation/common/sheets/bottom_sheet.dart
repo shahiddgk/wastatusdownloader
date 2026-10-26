@@ -97,7 +97,7 @@ abstract final class AppBottomSheet {
               ),
               const SizedBox(height: AppSpacing.space16),
               Text(
-                'WA Status Downloader scans WhatsApp status folders and its saved albums on your device. On newer Android versions, this requires the system\'s all-files access setting. The app has no internet permission and never uploads media.',
+                'WA Status Downloader reads statuses only from the WhatsApp Media folder you connect once through Android’s system picker. Saved copies are stored in your gallery. The app has no internet permission and never uploads media.',
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.darkTextSecondary,
                   height: 1.5,

@@ -5,7 +5,7 @@ WA Status Downloader is a Flutter app for discovering, previewing, and saving vi
 ## Identity
 
 - Product name: **WA Status Downloader**
-- Launcher name: **WA Saver**
+- Launcher name: **WA Status Downloader**
 - Android application ID and namespace: `ratedwhats.appstatusdownloader`
 - iOS bundle identifier: `ratedwhats.appstatusdownloader`
 - Android method channel: `ratedwhats.appstatusdownloader/scanner`
@@ -21,13 +21,16 @@ The launcher icon master is `assets/icon/launcher_icon.png`.
 - Add a local name or number label to an individual status.
 - Browse saved media in the Kept section.
 - Use system, light, or dark appearance.
-- Keep all app data and media processing on the device.
+- Keep media processing and user-entered labels on the device.
+- Require an update when Google Play reports an eligible newer version.
 
 ## Android access model
 
-The current Android build is intended for direct installation. On Android 11 and newer it requests **All files access** and limits its own scanner to known WhatsApp status and saved-media locations. Older supported Android versions use legacy storage permissions.
+The Android app supports Android 10 (API 29) and newer. The first time status discovery is needed, Android opens its system folder picker directed toward WhatsApp Media. The user confirms the pre-opened location by tapping **Use this folder**, then **Allow**. Android keeps that read-only folder connection for later launches unless the user revokes or changes it.
 
-The app does not declare `android.permission.INTERNET`. Google Play restricts `MANAGE_EXTERNAL_STORAGE`, so Play distribution requires an approved declaration or a different storage access strategy. See [the storage decision](docs/decisions/007-permission-only-status-access.md).
+The app reads only through that persisted scoped folder grant. It does not request `MANAGE_EXTERNAL_STORAGE`, legacy read/write external-storage permissions, or broad media-library permissions. Saved copies are written through MediaStore.
+
+Google Play handles update checks and installation in its own process. The app does not declare `android.permission.INTERNET`. See [the Play storage decision](docs/decisions/008-play-store-scoped-status-access.md) and [the SAF implementation decision](docs/decisions/001-saf-media-discovery.md).
 
 ## Development
 
@@ -72,6 +75,8 @@ Android storage and MediaStore operations stay behind the Kotlin platform channe
 Media discovery, thumbnails, labels, playback, and saving remain on the device. The app contains no advertising or analytics SDK and requests no network permission.
 
 ## License
+
+See [required Google Play updates](docs/release/required-updates.md) for behavior and release testing.
 
 The source is available under the [Apache License 2.0](LICENSE). The license file retains applicable copyright attribution from the source history.
 

@@ -20,7 +20,7 @@ Locally, confirm `android/key.properties` points to an existing keystore. The fi
 
 ## Identity validation
 
-The compiled APK must report package `ratedwhats.appstatusdownloader` and label `WA Status Downloader`. It must omit `android.permission.INTERNET` and include the direct-install storage permission.
+The compiled APK must report package `ratedwhats.appstatusdownloader` and label `WA Status Downloader`. It must omit `android.permission.INTERNET` and all broad-storage permissions: `MANAGE_EXTERNAL_STORAGE`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `READ_MEDIA_IMAGES`, and `READ_MEDIA_VIDEO`. Status discovery uses the user's persisted SAF folder grant; saved copies use `MediaStore`.
 
 ## iOS packaging
 

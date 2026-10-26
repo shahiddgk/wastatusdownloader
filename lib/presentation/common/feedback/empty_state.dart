@@ -40,9 +40,9 @@ class EmptyState extends StatelessWidget {
     return switch (scenario) {
       EmptyScenario.noAccess => (
         AppIcons.privacyShield,
-        'Allow status access',
-        'Allow access to find viewed statuses.',
-        'Allow access',
+        'Connect WhatsApp Media',
+        'Connect WhatsApp Media once to find viewed statuses.',
+        'Connect WhatsApp Media',
       ),
       EmptyScenario.noStatuses => (
         AppIcons.navMoments,
@@ -71,8 +71,8 @@ class EmptyState extends StatelessWidget {
       EmptyScenario.permissionRevoked => (
         AppIcons.errorWarning,
         'Access needs renewal',
-        'Allow access again to see statuses.',
-        'Allow access',
+        'Reconnect WhatsApp Media to see statuses.',
+        'Reconnect WhatsApp Media',
       ),
       EmptyScenario.momentExpired => (
         AppIcons.errorCircle,

@@ -173,17 +173,43 @@ jobs:
 
       - name: Android Manifest Permission Regression Check
         run: |
-          echo "Verifying permissions for the current direct-install Android build..."
+          echo "Verifying Play-safe scoped-storage declarations..."
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           if grep -q "android.permission.INTERNET" "$MANIFEST"; then
             echo "::error::android.permission.INTERNET declared in $MANIFEST"
             exit 1
           fi
-          if ! grep -q "android.permission.MANAGE_EXTERNAL_STORAGE" "$MANIFEST"; then
-            echo "::error::Required direct-storage permission is missing from $MANIFEST"
+          if ! awk '
+            /<uses-permission/ {
+              block = $0
+              while (block !~ /\/>/ && (getline nextLine) > 0) {
+                block = block "\n" nextLine
+              }
+              if (block ~ /android\.permission\.MANAGE_EXTERNAL_STORAGE/) {
+                count++
+                if (block !~ /tools:node="remove"/) invalid = 1
+              }
+            }
+            END { exit !(count == 1 && !invalid) }
+          ' "$MANIFEST"; then
+            echo "::error::Expected exactly one MANAGE_EXTERNAL_STORAGE manifest-removal rule in $MANIFEST"
             exit 1
           fi
-          echo "✓ Offline policy and direct-install storage permission verified."
+          for permission in \
+            android.permission.READ_EXTERNAL_STORAGE \
+            android.permission.WRITE_EXTERNAL_STORAGE \
+            android.permission.READ_MEDIA_IMAGES \
+            android.permission.READ_MEDIA_VIDEO; do
+            if grep -q "$permission" "$MANIFEST"; then
+              echo "::error::$permission must not be declared in $MANIFEST"
+              exit 1
+            fi
+          done
+          if grep -q "requestLegacyExternalStorage" "$MANIFEST"; then
+            echo "::error::requestLegacyExternalStorage must not be declared in $MANIFEST"
+            exit 1
+          fi
+          echo "✓ Offline policy and Play-safe scoped-storage declarations verified."
 
       - name: Application ID & Namespace Regression Check
         run: |
@@ -321,16 +347,23 @@ jobs:
           echo "Verifying version code: $EXPECTED_BUILD..."
           echo "$BADGING" | grep -E "versionCode='$EXPECTED_BUILD'"
 
-          echo "Verifying direct-install permissions..."
+          echo "Verifying Play-safe release permissions..."
           if echo "$BADGING" | grep -q "android.permission.INTERNET"; then
             echo "::error::Release APK contains android.permission.INTERNET!"
             exit 1
           fi
-          if ! echo "$BADGING" | grep -q "android.permission.MANAGE_EXTERNAL_STORAGE"; then
-            echo "::error::Release APK is missing its required direct-storage permission!"
-            exit 1
-          fi
-          echo "✓ Release APK identity, versioning ($EXPECTED_VERSION+$EXPECTED_BUILD), and direct-install permissions verified."
+          for permission in \
+            android.permission.MANAGE_EXTERNAL_STORAGE \
+            android.permission.READ_EXTERNAL_STORAGE \
+            android.permission.WRITE_EXTERNAL_STORAGE \
+            android.permission.READ_MEDIA_IMAGES \
+            android.permission.READ_MEDIA_VIDEO; do
+            if echo "$BADGING" | grep -q "$permission"; then
+              echo "::error::Release APK contains disallowed broad-storage permission: $permission"
+              exit 1
+            fi
+          done
+          echo "✓ Release APK identity, versioning ($EXPECTED_VERSION+$EXPECTED_BUILD), and Play-safe storage permissions verified."
 
       - name: Verify Release APK Signature
         if: needs.evaluate-and-tag.outputs.should_release == 'true' && needs.evaluate-and-tag.outputs.dry_run != 'true'

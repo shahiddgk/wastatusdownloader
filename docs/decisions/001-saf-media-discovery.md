@@ -1,10 +1,10 @@
-> Historical SAF design. The current direct-install APK uses the permission-only flow described in [decision 007](../decisions/007-permission-only-status-access.md). It requests broad Android file access and scans known status and saved-media directories. Previous scoped-permission claims below describe the earlier build.
+> Current scoped-storage design. [ADR 008](008-play-store-scoped-status-access.md) makes this SAF approach the Android release strategy. ADR 007 is retained only as a superseded historical record.
 
 # ADR 001: Storage Access Framework (SAF) for Status Discovery
 
 ## Context
-On modern Android (API 30–36 / Android 11–16), WhatsApp stores status media in `/sdcard/Android/media/com.whatsapp/WhatsApp/Media/.Statuses`.
-Direct POSIX file APIs (`java.io.File`) are blocked by the Linux kernel/FUSE layer.
+On Android 10 (API 29) and newer, WhatsApp stores status media under its shared-media tree, commonly within `Android/media/com.whatsapp/WhatsApp/Media/.Statuses`.
+Direct filesystem access is not a reliable or Play-compliant way to discover these files.
 System MediaStore indexes ignore hidden folders (prefixed with `.`) and directories containing `.nomedia`, returning 0 results.
 Broad storage access (`MANAGE_EXTERNAL_STORAGE`) violates Google Play Developer Policy for status savers and causes automatic store rejection.
 
@@ -15,10 +15,9 @@ Acquire and persist read permissions via `ContentResolver.takePersistableUriPerm
 Enumerate status files using direct `ContentResolver.query()` cursor projections over `DocumentsContract.buildChildDocumentsUriUsingTree()`.
 
 ## Status
-Accepted and verified on physical hardware (Xiaomi 2311DRK48I / Android 16 / HyperOS 3.0).
+Accepted. Each release still requires physical-device verification of the picker and a persisted grant.
 
 ## Consequences
 - **Positive:** Designed around Android scoped-storage and privacy-friendly SAF/MediaStore mechanisms without requiring broad storage permissions (`MANAGE_EXTERNAL_STORAGE`). Survives device restarts and app updates. High performance through projection-based cursor queries.
 - **Negative:** Requires an initial one-time user interaction via the system file picker (`DocumentsUI`).
 - **Mitigation:** Provide a step-by-step visual onboarding guide illustrating the exact "Use this folder" -> "Allow" buttons before opening the picker.
-

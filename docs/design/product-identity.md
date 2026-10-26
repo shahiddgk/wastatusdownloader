@@ -2,7 +2,7 @@
 
 ## Naming
 
-The public product is **WA Status Downloader**. Android and iOS launchers use **WA Saver** where a shorter label is needed.
+The public product name and Android and iOS launcher labels are **WA Status Downloader**.
 
 The Android application ID, Kotlin namespace, and iOS bundle identifier are:
 

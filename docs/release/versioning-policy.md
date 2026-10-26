@@ -7,10 +7,10 @@ WA Status Downloader uses `MAJOR.MINOR.PATCH+BUILD` in `pubspec.yaml`.
 - **PATCH** changes for fixes.
 - **BUILD** is a positive integer that increases for every distributed artifact.
 
-The current repository baseline is:
+The current release candidate is the value in `pubspec.yaml`:
 
 ```yaml
-version: 1.0.1+2
+version: MAJOR.MINOR.PATCH+BUILD
 ```
 
 Never reuse or decrease a build number after an APK, AAB, or IPA has been distributed or uploaded to a store track.

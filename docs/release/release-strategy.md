@@ -1,18 +1,18 @@
 # Release strategy
 
-## Android direct distribution
+## Android distribution
 
-The current Android build is suitable for signed direct distribution as an APK. It includes `MANAGE_EXTERNAL_STORAGE` for permission-only status discovery and omits `android.permission.INTERNET`.
+The same signed Android release can be distributed as an APK where appropriate or uploaded as an AAB to Google Play. It supports Android 10 (API 29) and newer, omits `android.permission.INTERNET`, and uses Android's one-time scoped WhatsApp Media folder connection for status discovery.
 
 ## Google Play
 
-An AAB can be produced with the upload key, but the current storage permission is restricted by Google Play. Store submission requires an eligible core use case and an approved All files access declaration, or a product change to another access model.
+The upload AAB must be built from the scoped-access configuration: no `MANAGE_EXTERNAL_STORAGE`, legacy read/write external-storage permissions, or broad media-library permissions. The listing and Data safety answers must accurately describe the one-time Android folder confirmation. This removes the All files access issue; it does not replace normal Play policy review.
 
 If Google Play App Signing is enabled, keep the Play app-signing key managed by Google and use this repository's `upload` key only to authenticate uploads.
 
 ## iOS
 
-The iOS bundle identifier is `ratedwhats.appstatusdownloader` and the display name is **WA Saver**. App Store packaging requires a matching Apple Distribution certificate and provisioning profile.
+The iOS bundle identifier is `ratedwhats.appstatusdownloader` and the display name is **WA Status Downloader**. App Store packaging requires a matching Apple Distribution certificate and provisioning profile.
 
 ## Versioning
 

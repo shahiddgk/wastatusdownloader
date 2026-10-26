@@ -1,13 +1,15 @@
 package ratedwhats.appstatusdownloader.status
 
 import android.content.Context
+import android.content.ContentUris
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
+import android.provider.MediaStore
 import android.util.Log
-import java.io.File
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
+import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
 data class StatusDocument(
@@ -82,37 +84,95 @@ class StatusDocumentReader(private val context: Context) {
     // In-memory registry for fast resolution of opaque ID -> StatusDocument
     private val documentCache = ConcurrentHashMap<String, StatusDocument>()
 
-    /** Registers only media discovered inside the selected WhatsApp source directories. */
-    fun scanFiles(roots: List<File>, targetPackage: String): List<StatusDocument> {
-        return registerFiles(StatusFileCatalog.scan(roots, targetPackage))
+    /**
+     * Lists media this app has exported to its public SavedStatus albums.
+     *
+     * These are app-owned MediaStore rows, so they remain available without broad
+     * storage permissions or direct file-system reads.
+     */
+    fun scanSavedMedia(): List<StatusDocument> {
+        val savedMedia = mutableListOf<StatusDocument>()
+        savedMedia += scanSavedCollection(
+            collectionUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            relativePath = MediaStoreSaver.IMAGE_RELATIVE_PATH,
+            isVideoCollection = false
+        )
+        savedMedia += scanSavedCollection(
+            collectionUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+            relativePath = MediaStoreSaver.VIDEO_RELATIVE_PATH,
+            isVideoCollection = true
+        )
+        return savedMedia.sortedByDescending { it.lastModified }
     }
 
-    fun scanSavedFiles(roots: List<File>): List<StatusDocument> {
-        val directories = roots.flatMap { root -> listOf(
-            File(root, MediaStoreSaver.IMAGE_RELATIVE_PATH),
-            File(root, MediaStoreSaver.VIDEO_RELATIVE_PATH)
-        ) }
-        return registerFiles(StatusFileCatalog.mediaFiles(directories), saved = true)
-    }
+    private fun scanSavedCollection(
+        collectionUri: Uri,
+        relativePath: String,
+        isVideoCollection: Boolean
+    ): List<StatusDocument> {
+        val projection = arrayOf(
+            MediaStore.MediaColumns._ID,
+            MediaStore.MediaColumns.DISPLAY_NAME,
+            MediaStore.MediaColumns.MIME_TYPE,
+            MediaStore.MediaColumns.SIZE,
+            MediaStore.MediaColumns.DATE_MODIFIED
+        )
+        val selection = "${MediaStore.MediaColumns.RELATIVE_PATH} = ?"
+        val selectionArgs = arrayOf(relativePath)
 
-    private fun registerFiles(files: List<File>, saved: Boolean = false): List<StatusDocument> {
-        val savedPrefs = context.getSharedPreferences("wa_status_downloader_saved_status", Context.MODE_PRIVATE)
-        return files.map { file ->
-            val mime = requireNotNull(StatusFileCatalog.mimeType(file.name))
-            val id = "file_" + ThumbnailManager.getSafeCacheKey(file.canonicalPath)
-            val document = StatusDocument(
-                id = id,
-                documentId = id,
-                displayName = file.name,
-                mimeType = mime,
-                sizeBytes = file.length(),
-                lastModified = file.lastModified(),
-                isVideo = mime.startsWith("video/"),
-                documentUri = Uri.fromFile(file),
-                isSaved = saved || savedPrefs.getBoolean(id, false) || savedPrefs.getBoolean(file.name, false)
-            )
-            documentCache[id] = document
-            document
+        return try {
+            buildList {
+                context.contentResolver.query(
+                    collectionUri,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    "${MediaStore.MediaColumns.DATE_MODIFIED} DESC"
+                )?.use { cursor ->
+                    val idCol = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
+                    val nameCol = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
+                    val mimeCol = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE)
+                    val sizeCol = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE)
+                    val modifiedCol = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED)
+
+                    while (cursor.moveToNext()) {
+                        val mediaId = cursor.getLong(idCol)
+                        val displayName = cursor.getString(nameCol) ?: continue
+                        val mimeType = cursor.getString(mimeCol).orEmpty()
+                        val sizeBytes = if (cursor.isNull(sizeCol)) 0L else cursor.getLong(sizeCol)
+                        if (displayName.startsWith('.') || sizeBytes <= 0L) continue
+
+                        val resolvedMimeType = resolveMimeType(
+                            displayName = displayName,
+                            reportedMimeType = mimeType,
+                            isVideo = isVideoCollection
+                        ) ?: continue
+                        val uri = ContentUris.withAppendedId(collectionUri, mediaId)
+                        val idPrefix = if (isVideoCollection) "saved_video" else "saved_image"
+                        val opaqueId = "${idPrefix}_$mediaId"
+                        val document = StatusDocument(
+                            id = opaqueId,
+                            documentId = uri.toString(),
+                            displayName = displayName,
+                            mimeType = resolvedMimeType,
+                            sizeBytes = sizeBytes,
+                            lastModified = if (cursor.isNull(modifiedCol)) {
+                                0L
+                            } else {
+                                cursor.getLong(modifiedCol) * 1000L
+                            },
+                            isVideo = isVideoCollection,
+                            documentUri = uri,
+                            isSaved = true
+                        )
+                        documentCache[opaqueId] = document
+                        add(document)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to query app-owned saved media", e)
+            throw e
         }
     }
 
@@ -124,8 +184,6 @@ class StatusDocumentReader(private val context: Context) {
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, statusesDocId)
 
         val savedPrefs = context.getSharedPreferences("wa_status_downloader_saved_status", Context.MODE_PRIVATE)
-        val picturesDir = File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_PICTURES), "SavedStatus")
-        val moviesDir = File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_MOVIES), "SavedStatus")
 
         try {
             context.contentResolver.query(childrenUri, PROJECTION, null, null, null)?.use { cursor ->
@@ -149,14 +207,14 @@ class StatusDocumentReader(private val context: Context) {
                         continue
                     }
 
-                    val lowerName = name.lowercase(java.util.Locale.ROOT)
-                        // WhatsApp may expose temporary files while media is still being written.
-                        // They must be left for a later scan instead of becoming broken statuses.
-                        if (name.startsWith('.') || size <= 0L ||
+                    val lowerName = name.lowercase(Locale.ROOT)
+                    // WhatsApp may expose temporary files while media is still being written.
+                    // They must be left for a later scan instead of becoming broken statuses.
+                    if (name.startsWith('.') || size <= 0L ||
                         lowerName.endsWith(".tmp") || lowerName.endsWith(".part") ||
                         lowerName.endsWith(".pending")) {
                         continue
-                        }
+                    }
 
                     val isVideo = mime.startsWith("video/") ||
                             lowerName.endsWith(".mp4") ||
@@ -181,28 +239,12 @@ class StatusDocumentReader(private val context: Context) {
                         continue
                     }
 
-                    val normalizedMime = when {
-                        mime.isNotEmpty() -> mime
-                        isVideo -> when {
-                            lowerName.endsWith(".3gp") -> "video/3gpp"
-                            lowerName.endsWith(".mov") -> "video/quicktime"
-                            lowerName.endsWith(".mkv") -> "video/x-matroska"
-                            lowerName.endsWith(".webm") -> "video/webm"
-                            else -> "video/mp4"
-                        }
-                        lowerName.endsWith(".gif") -> "image/gif"
-                        lowerName.endsWith(".heic") || lowerName.endsWith(".heif") -> "image/heic"
-                        lowerName.endsWith(".avif") -> "image/avif"
-                        lowerName.endsWith(".png") -> "image/png"
-                        lowerName.endsWith(".webp") -> "image/webp"
-                        else -> "image/jpeg"
-                    }
+                    val normalizedMime = resolveMimeType(name, mime, isVideo) ?: continue
 
                     val docUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, docId)
                     val opaqueId = encodeOpaqueId(docId)
                     val isSaved = savedPrefs.getBoolean(opaqueId, false) ||
-                            savedPrefs.getBoolean(name, false) ||
-                            (if (isVideo) File(moviesDir, name).exists() else File(picturesDir, name).exists())
+                            savedPrefs.getBoolean(name, false)
 
                     val statusDoc = StatusDocument(
                         id = opaqueId,
@@ -229,6 +271,39 @@ class StatusDocumentReader(private val context: Context) {
         }
 
         return resultList
+    }
+
+    private fun resolveMimeType(
+        displayName: String,
+        reportedMimeType: String,
+        isVideo: Boolean
+    ): String? {
+        val lowerName = displayName.lowercase(Locale.ROOT)
+        val isSupportedVideo = isVideo || lowerName.endsWith(".mp4") ||
+            lowerName.endsWith(".m4v") || lowerName.endsWith(".3gp") ||
+            lowerName.endsWith(".mov") || lowerName.endsWith(".mkv") ||
+            lowerName.endsWith(".webm")
+        val isSupportedImage = !isVideo && (lowerName.endsWith(".jpg") ||
+            lowerName.endsWith(".jpeg") || lowerName.endsWith(".png") ||
+            lowerName.endsWith(".webp") || lowerName.endsWith(".gif") ||
+            lowerName.endsWith(".heic") || lowerName.endsWith(".heif") ||
+            lowerName.endsWith(".avif"))
+        if (!isSupportedVideo && !isSupportedImage) return null
+
+        if (reportedMimeType.isNotBlank()) return reportedMimeType
+        return when {
+            isSupportedVideo && lowerName.endsWith(".3gp") -> "video/3gpp"
+            isSupportedVideo && lowerName.endsWith(".mov") -> "video/quicktime"
+            isSupportedVideo && lowerName.endsWith(".mkv") -> "video/x-matroska"
+            isSupportedVideo && lowerName.endsWith(".webm") -> "video/webm"
+            isSupportedVideo -> "video/mp4"
+            lowerName.endsWith(".gif") -> "image/gif"
+            lowerName.endsWith(".heic") || lowerName.endsWith(".heif") -> "image/heic"
+            lowerName.endsWith(".avif") -> "image/avif"
+            lowerName.endsWith(".png") -> "image/png"
+            lowerName.endsWith(".webp") -> "image/webp"
+            else -> "image/jpeg"
+        }
     }
 
     /**

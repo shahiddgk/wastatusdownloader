@@ -26,14 +26,24 @@ class SettingsScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.perm_media_outlined),
             title: const Text('Status access'),
-            subtitle: Text(access.isGranted ? 'Allowed' : 'Not allowed'),
+            subtitle: Text(
+              access.isGranted
+                  ? 'WhatsApp Media connected'
+                  : 'Connect WhatsApp Media',
+            ),
             trailing: busy
                 ? const SizedBox.square(
                     dimension: 24,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : Icon(access.isGranted ? Icons.check : Icons.chevron_right),
-            onTap: busy || access.isGranted
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (access.isGranted) const Icon(Icons.check),
+                      const Icon(Icons.chevron_right),
+                    ],
+                  ),
+            onTap: busy
                 ? null
                 : () => ref
                       .read(accessNotifierProvider.notifier)

@@ -32,6 +32,7 @@ class AndroidStatusScanner(
     companion object {
         const val CHANNEL_NAME = "ratedwhats.appstatusdownloader/scanner"
         private const val TAG = "AndroidStatusScanner"
+        private const val SAF_REQUEST_CODE = 4204
     }
 
     object ErrorCodes {
@@ -51,7 +52,6 @@ class AndroidStatusScanner(
     }
 
     private var channel: MethodChannel? = null
-    private val directStorageAccess = DirectStorageAccess(activity)
     private var pendingAccessResult: MethodChannel.Result? = null
     private var pendingTargetPackage: String? = null
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -92,9 +92,9 @@ class AndroidStatusScanner(
         scope.launch {
             try {
                 val accessResult = withContext(Dispatchers.IO) {
-                    directStorageAccess.result(targetPackage)
+                    safStorageManager.checkAccess(targetPackage)
                 }
-                result.success(accessResult)
+                result.success(accessResult.toMap())
             } catch (e: Exception) {
                 Log.e(TAG, "checkFolderAccess failed", e)
                 result.error(ErrorCodes.UNKNOWN, e.message, null)
@@ -112,33 +112,121 @@ class AndroidStatusScanner(
         pendingTargetPackage = targetPackage
 
         try {
-            if (directStorageAccess.hasAccess()) {
-                completeAccessRequest()
-            } else {
-                directStorageAccess.request()
-            }
+            val intent = safStorageManager.createOpenDocumentTreeIntent(targetPackage)
+            activity.startActivityForResult(intent, SAF_REQUEST_CODE)
         } catch (e: Exception) {
             pendingAccessResult = null
             pendingTargetPackage = null
-            Log.e(TAG, "Could not open storage permission settings")
-            result.error("LAUNCH_FAILED", "Could not open permission settings. Please try again.", null)
+            Log.e(TAG, "Could not open the system folder picker", e)
+            result.error("LAUNCH_FAILED", "Could not open the folder picker. Please try again.", null)
         }
     }
 
-    private fun completeAccessRequest() {
-        val result = pendingAccessResult ?: return
+    private fun completeAccessRequest(resultCode: Int, data: Intent?) {
+        val channelResult = pendingAccessResult ?: return
         val targetPackage = pendingTargetPackage ?: SafStorageManager.WHATSAPP_STANDARD
         pendingAccessResult = null
         pendingTargetPackage = null
-        result.success(directStorageAccess.result(targetPackage))
-    }
 
-    fun onRequestPermissionsResult(requestCode: Int) {
-        if (requestCode == DirectStorageAccess.REQUEST_CODE) completeAccessRequest()
+        if (resultCode != Activity.RESULT_OK || data?.data == null) {
+            // Cancelling a replacement request must leave an existing connection
+            // intact. Re-read the persisted grant instead of reporting a blanket
+            // denial, otherwise Flutter would temporarily hide valid statuses.
+            scope.launch {
+                try {
+                    val response = withContext(Dispatchers.IO) {
+                        val access = safStorageManager.checkAccess(targetPackage)
+                        mapOf(
+                            "granted" to access.hasAccess,
+                            "persisted" to (access.treeUri != null),
+                            "treeUri" to access.treeUri?.toString(),
+                            "status" to access.status.name.lowercase(),
+                            "resolvedStatusesDocId" to access.resolvedStatusesDocId,
+                            "error" to if (access.hasAccess) {
+                                null
+                            } else {
+                                "Folder selection was cancelled."
+                            }
+                        )
+                    }
+                    channelResult.success(response)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Could not re-check access after picker cancellation", e)
+                    channelResult.success(
+                        mapOf(
+                            "granted" to false,
+                            "persisted" to false,
+                            "status" to ValidationStatus.NOT_GRANTED.name.lowercase(),
+                            "error" to "Folder selection was cancelled."
+                        )
+                    )
+                }
+            }
+            return
+        }
+
+        val treeUri = data.data ?: return
+        val resultFlags = data.flags
+        scope.launch {
+            try {
+                val accessResponse = withContext(Dispatchers.IO) {
+                    val persisted = safStorageManager.takePersistableReadPermission(treeUri, resultFlags)
+                    if (!persisted) {
+                        return@withContext mapOf(
+                            "granted" to false,
+                            "persisted" to false,
+                            "treeUri" to treeUri.toString(),
+                            "status" to ValidationStatus.NOT_GRANTED.name.lowercase(),
+                            "error" to "Android could not save access to this folder."
+                        )
+                    }
+
+                    val validation = safStorageManager.validateTreeUri(treeUri, targetPackage)
+                    val keepPermission = validation.status == ValidationStatus.VALID ||
+                        validation.status == ValidationStatus.VALID_PARENT ||
+                        validation.status == ValidationStatus.UNAVAILABLE
+                    val stored = keepPermission &&
+                        safStorageManager.saveValidatedTreeUri(treeUri, targetPackage)
+
+                    if (!stored) {
+                        safStorageManager.releasePersistedReadPermission(treeUri)
+                    }
+
+                    mapOf(
+                        "granted" to (stored &&
+                            (validation.status == ValidationStatus.VALID ||
+                                validation.status == ValidationStatus.VALID_PARENT)),
+                        "persisted" to stored,
+                        "treeUri" to treeUri.toString(),
+                        "status" to validation.status.name.lowercase(),
+                        "resolvedStatusesDocId" to validation.resolvedStatusesDocId,
+                        "error" to if (stored) {
+                            validation.errorMessage
+                        } else {
+                            "Android could not save access to this folder."
+                        }
+                    )
+                }
+                channelResult.success(accessResponse)
+            } catch (e: Exception) {
+                Log.e(TAG, "Could not save selected folder access", e)
+                channelResult.success(
+                    mapOf(
+                        "granted" to false,
+                        "persisted" to false,
+                        "treeUri" to treeUri.toString(),
+                        "status" to ValidationStatus.NOT_GRANTED.name.lowercase(),
+                        "error" to "Could not connect this folder. Please try again."
+                    )
+                )
+            }
+        }
     }
 
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == DirectStorageAccess.REQUEST_CODE) completeAccessRequest()
+        if (requestCode == SAF_REQUEST_CODE) {
+            completeAccessRequest(resultCode, data)
+        }
     }
 
     private fun handleScanStatuses(call: MethodCall, result: MethodChannel.Result) {
@@ -146,27 +234,49 @@ class AndroidStatusScanner(
         scope.launch {
             try {
                 val items = withContext(Dispatchers.IO) {
-                    if (!directStorageAccess.hasAccess()) {
-                        throw SecurityException("Allow file access to see statuses.")
-                    }
-                    val roots = directStorageAccess.storageRoots()
                     if (call.method == "getSavedStatuses") {
-                        statusDocumentReader.scanSavedFiles(roots)
+                        statusDocumentReader.scanSavedMedia()
                     } else {
-                        statusDocumentReader.scanFiles(roots, targetPackage)
+                        val access = safStorageManager.checkAccess(targetPackage)
+                        when (access.status) {
+                            ValidationStatus.VALID,
+                            ValidationStatus.VALID_PARENT -> {
+                                val treeUri = requireNotNull(access.treeUri)
+                                val statusesDocId = requireNotNull(access.resolvedStatusesDocId)
+                                statusDocumentReader.scanStatuses(treeUri, statusesDocId)
+                            }
+                            ValidationStatus.PERMISSION_REVOKED -> throw SecurityException(
+                                access.errorMessage ?: "Folder access was revoked."
+                            )
+                            ValidationStatus.INVALID -> throw IllegalArgumentException(
+                                access.errorMessage ?: "The selected folder is invalid."
+                            )
+                            ValidationStatus.UNAVAILABLE -> throw IllegalStateException(
+                                access.errorMessage ?: "WhatsApp statuses are unavailable."
+                            )
+                            ValidationStatus.NOT_GRANTED -> throw AccessNotGrantedException(
+                                access.errorMessage ?: "Connect the WhatsApp media folder first."
+                            )
+                        }
                     }
                 }
                 result.success(items.map { it.toMap() })
+            } catch (e: AccessNotGrantedException) {
+                result.error(ErrorCodes.ACCESS_NOT_GRANTED, e.message, null)
             } catch (e: SecurityException) {
-                result.error(ErrorCodes.ACCESS_REVOKED, "Allow file access to see statuses.", null)
+                result.error(ErrorCodes.ACCESS_REVOKED, e.message, null)
             } catch (e: IllegalArgumentException) {
-                result.error("INVALID_ARG", "Unsupported status source.", null)
+                result.error(ErrorCodes.INVALID_FOLDER, e.message, null)
+            } catch (e: IllegalStateException) {
+                result.error(ErrorCodes.STATUSES_UNAVAILABLE, e.message, null)
             } catch (e: Exception) {
-                Log.e(TAG, "Status discovery failed")
+                Log.e(TAG, "Status discovery failed", e)
                 result.error(ErrorCodes.READ_FAILED, "Could not load statuses. Please try again.", null)
             }
         }
     }
+
+    private class AccessNotGrantedException(message: String) : Exception(message)
 
     private fun handleGetThumbnail(call: MethodCall, result: MethodChannel.Result) {
         val id = call.argument<String>("id")

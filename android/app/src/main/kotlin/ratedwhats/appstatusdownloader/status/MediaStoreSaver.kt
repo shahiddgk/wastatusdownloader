@@ -3,7 +3,6 @@ package ratedwhats.appstatusdownloader.status
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import java.io.IOException
@@ -64,25 +63,8 @@ class MediaStoreSaver(private val context: Context) {
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, sanitizedDisplayName)
             put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
-                put(MediaStore.MediaColumns.IS_PENDING, 1)
-            } else {
-                @Suppress("DEPRECATION")
-                val root = android.os.Environment.getExternalStorageDirectory()
-                val directory = java.io.File(root, relativePath)
-                if (!directory.isDirectory && !directory.mkdirs()) {
-                    throw IOException("Could not create save folder")
-                }
-                var destination = java.io.File(directory, sanitizedDisplayName)
-                var copy = 1
-                while (destination.exists()) {
-                    destination = java.io.File(directory,
-                        "${java.io.File(sanitizedDisplayName).nameWithoutExtension}_${copy++}.${java.io.File(sanitizedDisplayName).extension}")
-                }
-                @Suppress("DEPRECATION")
-                put(MediaStore.MediaColumns.DATA, destination.absolutePath)
-            }
+            put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
         }
 
         var targetUri: Uri? = null
@@ -113,12 +95,10 @@ class MediaStoreSaver(private val context: Context) {
             }
 
             // Stage 4: Finalize by clearing IS_PENDING
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                contentValues.clear()
-                contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
-                if (resolver.update(targetUri, contentValues, null, null) != 1) {
-                    throw IOException("Could not finalize saved media")
-                }
+            contentValues.clear()
+            contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            if (resolver.update(targetUri, contentValues, null, null) != 1) {
+                throw IOException("Could not finalize saved media")
             }
 
             Log.d(TAG, "Saved $mediaTypeLabel successfully")

@@ -38,7 +38,7 @@
   2. **Full-Screen Photo Inspection:** High-resolution zoom view with contextual bottom actions (Keep, Share).
   3. **Full-Screen Video Playback:** Immersive playback interface with timeline scrubber and pause controls.
   4. **Kept Vault:** Organized library of permanently saved media items with search and filter tabs.
-  5. **File Access Consent:** Transparent Android All files access explanation screen detailing the broad OS grant and the app's limited scan scope.
+  5. **WhatsApp Media Connection:** Transparent one-time Android folder-connection guide showing **Use this folder**, then **Allow**.
   6. **Theme Customization:** Displaying Light, Dark, and AMOLED themes alongside privacy safeguards.
 
 ---

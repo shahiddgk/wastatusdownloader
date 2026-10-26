@@ -10,7 +10,7 @@
 | Save to public gallery | Implemented | Not implemented | Android uses MediaStore |
 | Native sharing | Implemented | Not implemented | Current platform channel is Android only |
 | Local status labels | Implemented | Implemented in Dart | Stored in app preferences |
-| All files access flow | Implemented | Not applicable | Android direct-install strategy |
+| One-time scoped WhatsApp Media connection | Implemented | Not applicable | Android system picker persists a read-only selected-folder grant |
 | Offline operation | Implemented | Implemented | Android manifest has no internet permission |
 
 Android is the supported product target. The iOS project is maintained for build compatibility where practical, but it does not provide WhatsApp status discovery.

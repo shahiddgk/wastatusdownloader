@@ -4,13 +4,13 @@
 
 The maintainer must register this exact package in any target store and complete the store's current identity, contact, tax, and policy requirements.
 
-## Direct APK distribution
+## Signed Android artifacts
 
-Publish only release-signed APKs. Provide a SHA-256 checksum and retain an encrypted backup of the upload keystore and credentials. Verify the signature, package ID, version, label, and permissions from the final APK.
+Publish only release-signed APKs. Provide a SHA-256 checksum for direct downloads and retain an encrypted backup of the upload keystore and credentials. Verify the signature, package ID, version, label, minimum SDK, and permissions from the final APK/AAB.
 
 ## Google Play
 
-The current build declares `MANAGE_EXTERNAL_STORAGE`. Google Play restricts All files access and requires an eligible core use case plus an approved declaration. Package registration or a successful AAB build does not establish policy eligibility.
+The current build uses a user-confirmed, persisted Storage Access Framework grant for WhatsApp Media. Verify the final upload artifact does not request `MANAGE_EXTERNAL_STORAGE`, legacy read/write external-storage permissions, or broad media-library permissions. Package registration or a successful AAB build does not establish policy eligibility; the final store listing, declarations, and binary must still match.
 
 If Play App Signing is enabled, register the public certificate for the `upload` key and keep the private key outside the repository.
 

@@ -241,10 +241,13 @@ void main() {
           ),
         );
 
-        expect(find.text('Allow status access'), findsOneWidget);
-        expect(find.text('Allow access'), findsOneWidget);
+        expect(find.text('Connect WhatsApp Media'), findsNWidgets(2));
+        expect(
+          find.text('Connect WhatsApp Media once to find viewed statuses.'),
+          findsOneWidget,
+        );
 
-        await tester.tap(find.text('Allow access'));
+        await tester.tap(find.text('Connect WhatsApp Media').last);
         await tester.pump();
         expect(buttonPressed, isTrue);
       });
@@ -313,11 +316,15 @@ void main() {
         await tester.pumpWidget(buildTestable(const PermissionGuide()));
 
         expect(find.text('1. View statuses in WhatsApp'), findsOneWidget);
-        expect(find.text('2. Tap Allow access'), findsOneWidget);
-        expect(find.text('3. Allow access and return'), findsOneWidget);
-        expect(find.textContaining('load automatically'), findsOneWidget);
+        expect(find.text('2. Tap Connect WhatsApp Media'), findsOneWidget);
+        expect(
+          find.text('3. Tap “Use this folder”, then “Allow”'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('system picker'), findsOneWidget);
+        expect(find.textContaining('stays active until'), findsOneWidget);
         expect(find.textContaining('Connect Folder'), findsNothing);
-        expect(find.textContaining('Use this folder'), findsNothing);
+        expect(find.textContaining('Use this folder'), findsOneWidget);
         expect(
           find.text('100% On-Device • Zero Network • Private'),
           findsOneWidget,

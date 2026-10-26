@@ -1,7 +1,7 @@
 # Store metadata draft
 
 **Product:** WA Status Downloader  
-**Launcher name:** WA Saver  
+**Launcher name:** WA Status Downloader\
 **Android package:** `ratedwhats.appstatusdownloader`
 
 Support, marketing, privacy-policy, and publisher URLs are not configured in this repository.
@@ -25,10 +25,17 @@ available on your Android device.
 • Share media through Android's system share sheet
 • Add your own local name or number label to a status
 • Choose light, dark, or system appearance
-• Work offline with no account, advertising, analytics, or cloud upload
+• Browse and save media offline with no account, advertising, analytics, or cloud upload
+• Install required updates through Google Play when an eligible newer version is detected
 
 WA Status Downloader processes media on your device and does not request internet
-access. The app never identifies a status sender automatically.
+access. Connect WhatsApp Media once through Android's system picker, then confirm
+the selected folder to browse statuses already available on your device. The app
+never identifies a status sender automatically.
+
+Update checks and installation are handled by Google Play. Once a required update
+is detected, install it to continue using the app. Google Play may process
+update-related device and app metadata; the app does not send media or labels to it.
 
 WA Status Downloader is independent and is not affiliated with, endorsed by, or
 sponsored by WhatsApp or Meta.
@@ -36,13 +43,13 @@ sponsored by WhatsApp or Meta.
 
 ## Permission disclosure
 
-The current direct-install build asks the user to enable Android **All files access** on Android 11 and newer. The operating-system grant is broad. The application scanner limits itself to known WhatsApp status folders and its saved-media locations.
+On Android 10 and newer, WA Status Downloader asks the user once to connect WhatsApp Media through Android's system folder picker. The picker is directed toward WhatsApp Media; the user confirms **Use this folder**, then **Allow**. Android persists a read-only connection for status discovery until the user revokes or changes it.
 
-Google Play restricts this permission. Do not submit this build to Google Play until the declaration is approved for an eligible core use case or the app adopts another storage strategy.
+The app does not request All files access, legacy read/write external-storage permissions, or broad media-library permissions. Saved copies are created through MediaStore in the user's gallery.
 
 ## Privacy declarations
 
-The current app has no account system, network permission, advertising SDK, analytics SDK, or remote service. Media and user-entered labels stay on the device.
+The current app has no account system, Android internet permission, advertising SDK, or analytics SDK. Media and user-entered labels stay on the device. Google Play handles update checks and installation in its own process and may process update-related metadata. Review the Google Play In-App Updates data safety disclosure when completing store declarations.
 
 ## iOS
 

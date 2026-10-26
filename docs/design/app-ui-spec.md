@@ -73,10 +73,11 @@ WA Status Downloader is structured around three core destinations:
 │   │ [1]  1. View statuses in        │   │  <-- Step 1 Card (Surface Level 1)
 │   │      WhatsApp                   │   │
 │   ├─────────────────────────────────┤   │
-│   │ [2]  2. Tap Connect Folder below│   │  <-- Step 2 Card (Surface Level 1)
+│   │ [2]  2. Tap Connect WhatsApp    │   │  <-- Step 2 Card (Surface Level 1)
+│   │      Media below                │   │
 │   ├─────────────────────────────────┤   │
-│   │ [3]  3. Tap "Use this folder"   │   │  <-- Step 3 Card (Highlighted Border)
-│   │      in Android picker          │   │
+│   │ [3]  3. Tap "Use this folder",  │   │  <-- Step 3 Card (Highlighted Border)
+│   │      then "Allow"               │   │
 │   └─────────────────────────────────┘   │
 │                                         │
 │   ┌─────────────────────────────────┐   │
@@ -85,7 +86,7 @@ WA Status Downloader is structured around three core destinations:
 │   └─────────────────────────────────┘   │
 │                                         │
 │   ┌─────────────────────────────────┐   │
-│   │      Connect Media Folder       │   │  <-- Primary CTA (Aurora Mint #10B981)
+│   │      Connect WhatsApp Media     │   │  <-- Primary CTA (Aurora Mint #10B981)
 │   └─────────────────────────────────┘   │
 │                                         │
 │       Learn how WA Status Downloader protects you      │  <-- Secondary Text Action (12sp)
@@ -93,23 +94,23 @@ WA Status Downloader is structured around three core destinations:
 ```
 
 #### Detailed Specification
-1. **Purpose:** Guides users through Android's All files access settings flow with clear expectations, complete transparency, and zero technical jargon.
+1. **Purpose:** Guides users through Android's system folder-picker flow with clear expectations, complete transparency, and zero technical jargon.
 2. **Copy Hierarchy:**
    * **Headline:** "Connect your moments"
    * **Subhead:** "WA Status Downloader needs access to your WhatsApp media folder to discover moments."
    * **Step 1:** "View statuses in WhatsApp" (Explains that statuses only exist on-device once viewed in WhatsApp).
-   * **Step 2:** "Tap Connect Folder below" (Prepares the user for the OS file dialog).
-   * **Step 3:** "Tap 'Use this folder' in Android picker" (Explicitly quotes Android's system button).
+   * **Step 2:** "Tap Connect WhatsApp Media below" (Prepares the user for the OS file dialog).
+   * **Step 3:** "Tap 'Use this folder', then 'Allow'" (Explicitly quotes Android's system buttons).
    * **Trust Badge:** "100% On-Device • Zero Network • Private"
-   * **CTA Label:** "Connect Media Folder"
+   * **CTA Label:** "Connect WhatsApp Media"
 3. **States:**
    * **Initial/Idle:** Shows the 3 steps, active mint CTA button.
    * **Requesting:** CTA enters loading state (indeterminate circular indicator inside button), screen disables duplicate taps while Android `DocumentsUI` is active.
    * **Granted:** Translucent toast/overlay appears with animated mint checkmark: "Connected safely. Discovering moments..." and transitions automatically to Moments Home.
-   * **Declined/Cancelled:** Sheet remains visible, gentle notification banner appears: *"Folder selection is required to view statuses. Tap Connect whenever you're ready."*
+   * **Declined/Cancelled:** Sheet remains visible, gentle notification banner appears: *"Connect WhatsApp Media to view statuses. Tap Connect whenever you're ready."*
    * **Wrong Folder Selected:** Clear warning banner: *"Please select the WhatsApp media folder so WA Status Downloader can discover moments."* with a "Try Again" button.
 4. **Accessibility:**
-   * TalkBack reads: *"Connect your moments. Three steps required: Step 1: View statuses in WhatsApp. Step 2: Tap Connect Folder below. Step 3: Tap Use this folder in Android picker. Button: Connect Media Folder."*
+   * TalkBack reads: *"Connect your moments. Three steps required: Step 1: View statuses in WhatsApp. Step 2: Tap Connect WhatsApp Media below. Step 3: Tap Use this folder, then Allow. Button: Connect WhatsApp Media."*
    * Touch target on CTA is 52dp height, exceeding the 48dp requirement.
 
 ---
@@ -275,7 +276,7 @@ Generic "No data" screens cause user confusion and support tickets. WA Status Do
 
 | State Code | Scenario | Graphic / Icon | Primary Message | Subtitle & Guidance | Action Button |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **ES-01** | **No SAF Access Granted** | Glowing Shield Folder | "Connect your moments" | "Select your WhatsApp media folder to discover statuses before they expire." | "Connect Media Folder" |
+| **ES-01** | **No SAF Access Granted** | Glowing Shield Folder | "Connect your moments" | "Connect WhatsApp Media once to discover statuses before they expire." | "Connect WhatsApp Media" |
 | **ES-02** | **No Statuses on Device** | Clean Calendar Spark | "No moments right now" | "Statuses appear here after you view them in WhatsApp. Go view a few statuses and return." | "Open WhatsApp" |
 | **ES-03** | **No New Moments (Filtered)**| Filter funnel icon | "No matching moments" | "No moments match the active filter. Switch filters to view all available statuses." | "Show All Moments" |
 | **ES-04** | **No Kept Moments Yet** | Empty Bookmark Vault | "Your vault is empty" | "Keep your favorite moments before they vanish in 24 hours. Tapping Keep saves them forever." | "Explore Moments" |

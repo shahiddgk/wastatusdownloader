@@ -42,7 +42,9 @@ android {
         applicationId = "ratedwhats.appstatusdownloader"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Android 10+ provides the scoped storage and zero-permission MediaStore
+        // APIs used by the Play-distributed storage model.
+        minSdk = 29
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
         // is added automatically by Flutter. (https://developer.android.com/studio/build/configure-apk-splits#configure-APK-versions)
@@ -103,5 +105,6 @@ flutter {
 }
 
 dependencies {
+    implementation("com.google.android.play:app-update:2.1.0")
     testImplementation("junit:junit:4.13.2")
 }

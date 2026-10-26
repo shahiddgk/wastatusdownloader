@@ -8,7 +8,7 @@ import 'package:whatsapp_status_saver/app/theme/app_typography.dart';
 
 import 'permission_step.dart';
 
-/// The three-step visual guide explaining Android file access permission.
+/// The three-step visual guide for connecting the WhatsApp Media folder.
 ///
 /// Implements specification from docs/design/app-component-spec.md Section 2.15
 /// and docs/design/app-ui-spec.md Screen A.
@@ -17,15 +17,20 @@ class PermissionGuide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final colors =
+        theme.extension<AppColorsExtension>() ?? AppColorsExtension.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: AppSpacing.space12),
           child: Text(
-            'HOW WA STATUS DOWNLOADER WORKS',
+            'WHAT HAPPENS NEXT',
             style: AppTypography.labelSmall.copyWith(
-              color: AppColors.darkTextTertiary,
+              color: colors.textTertiary,
               letterSpacing: 1.2,
               fontWeight: FontWeight.w700,
             ),
@@ -39,15 +44,14 @@ class PermissionGuide extends StatelessWidget {
         const SizedBox(height: AppSpacing.space12),
         const PermissionStep(
           stepNumber: 2,
-          title: '2. Tap Allow access',
-          description:
-              'Android will ask for file access to find your viewed statuses.',
+          title: '2. Tap Connect WhatsApp Media',
+          description: 'Android’s system picker opens WhatsApp Media for you.',
         ),
         const SizedBox(height: AppSpacing.space12),
         const PermissionStep(
           stepNumber: 3,
-          title: '3. Allow access and return',
-          description: 'Enable the requested file access, then return here. Viewed statuses load automatically.',
+          title: '3. Tap “Use this folder”, then “Allow”',
+          description: 'Confirm once. The connection stays active until you change or revoke it.',
           isHighlighted: true,
         ),
         const SizedBox(height: AppSpacing.space16),
@@ -59,24 +63,23 @@ class PermissionGuide extends StatelessWidget {
             vertical: AppSpacing.space12,
           ),
           decoration: BoxDecoration(
-            color: AppColors.darkSurfaceLevel1,
+            color: scheme.primary.withValues(alpha: 0.08),
             borderRadius: AppRadius.borderPill,
-            border: Border.all(color: AppColors.darkBorderSubtle, width: 1),
+            border: Border.all(
+              color: scheme.primary.withValues(alpha: 0.22),
+              width: 1,
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                AppIcons.privacyShield,
-                size: 16,
-                color: AppColors.darkPrimary,
-              ),
+              Icon(AppIcons.privacyShield, size: 16, color: scheme.primary),
               const SizedBox(width: AppSpacing.space8),
               Flexible(
                 child: Text(
                   '100% On-Device • Zero Network • Private',
                   style: AppTypography.labelMedium.copyWith(
-                    color: AppColors.darkTextSecondary,
+                    color: scheme.onSurface.withValues(alpha: 0.76),
                   ),
                   textAlign: TextAlign.center,
                   softWrap: true,

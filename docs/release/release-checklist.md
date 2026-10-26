@@ -14,23 +14,25 @@
 - [ ] `./gradlew :app:testDebugUnitTest` passes from `android/`.
 - [ ] Version and build number in `pubspec.yaml` are correct.
 
-## Signed Android direct release
+## Signed Android release
 
 - [ ] Application ID and namespace are `ratedwhats.appstatusdownloader`.
-- [ ] App label is **WA Status Downloader** and launcher label is **WA Saver**.
+- [ ] App label is **WA Status Downloader** and launcher label is **WA Status Downloader**.
+- [ ] Minimum Android version is Android 10 / API 29.
 - [ ] `android.permission.INTERNET` is absent.
-- [ ] `android.permission.MANAGE_EXTERNAL_STORAGE` is present for the current direct-install flow.
+- [ ] `MANAGE_EXTERNAL_STORAGE`, legacy read/write external-storage permissions, and broad media-library permissions are absent from the final APK/AAB manifest.
 - [ ] The upload keystore and both passwords have an encrypted backup.
 - [ ] `flutter build apk --release` succeeds.
-- [ ] `flutter build appbundle --release` succeeds when an AAB is needed.
+- [ ] `flutter build appbundle --release` succeeds.
 - [ ] `apksigner verify --verbose --print-certs` succeeds for the APK.
 - [ ] APK package, version, label, and permissions are checked with `aapt dump badging`.
-- [ ] The signed APK is installed and tested on a physical Android device.
+- [ ] A fresh install is tested on a physical Android device: **Connect WhatsApp Media** opens Android's picker toward WhatsApp Media; tapping **Use this folder**, then **Allow** permits discovery.
+- [ ] The physical-device test confirms the persisted connection survives an app restart and shows a useful reconnect path after Android access is revoked.
 - [ ] SHA-256 checksums accompany public downloads.
 
 ## Google Play gate
 
-- [ ] The All files access declaration is approved for an eligible core use case, or the permission has been removed through an approved storage redesign.
+- [ ] The final uploaded AAB has the scoped folder-access manifest described above; no All files access declaration is submitted.
 - [ ] Google Play App Signing is configured.
 - [ ] Required support and privacy-policy URLs are published.
 - [ ] Data Safety and permission declarations match the tested binary.
@@ -38,7 +40,7 @@
 
 ## iOS gate
 
-- [ ] Display name is **WA Saver**.
+- [ ] Display name is **WA Status Downloader**.
 - [ ] A matching Apple Distribution certificate and provisioning profile are configured.
 - [ ] The product scope does not claim WhatsApp status discovery.
 - [ ] A verified iOS media-import flow exists before public release.
